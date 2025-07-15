@@ -13,7 +13,7 @@ from roop.face_util import extract_face_images
 from roop.ProcessEntry import ProcessEntry
 from roop.FaceSet import FaceSet
 from roop import utilities as util
-from ui.main import prepare_environment
+from prepare_env import prepare_environment
 
 def get_args():
     """Parses command-line arguments."""
