@@ -59,6 +59,7 @@ def run():
     roop_globals.selected_enhancer = args.enhancer
     roop_globals.distance_threshold = args.similarity_threshold
     roop_globals.blend_ratio = args.blend_ratio
+    roop_globals.execution_providers=["CUDAExecutionProvider"]
     roop_globals.mask_engine = 'None'
     roop_globals.clip_text = None
     
