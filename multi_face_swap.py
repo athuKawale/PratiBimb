@@ -13,7 +13,7 @@ from roop.face_util import extract_face_images
 from roop.ProcessEntry import ProcessEntry
 from roop.FaceSet import FaceSet
 from roop import utilities as util
-from ui.main import prepare_environment
+from prepare_env import prepare_environment
 
 def get_args():
     """Parses command-line arguments."""
@@ -65,6 +65,8 @@ def run():
     roop_globals.no_face_action = 0 # Use untouched original frame
     roop_globals.autorotate_faces = True
     roop_globals.subsample_size = 128
+    roop_globals.mask_engine = 'None'
+    roop_globals.clip_text = None
 
     # Load source faces
     print("Analyzing source images...")
@@ -98,16 +100,16 @@ def run():
     
     batch_process_regular(
         swap_model=args.swap_model,
-        output_method="File",
-        list_files_process=list_files_process,
-        mask_engine=None,
-        clip_text=None,
-        in_memory=True,
+        output_method="File",      
+        files=list_files_process,
+        masking_engine=roop_globals.mask_engine,
+        new_clip_text=roop_globals.clip_text,
+        use_new_method=True,
         imagemask=None,
         restore_original_mouth=False,
         num_swap_steps=1,
         progress=None,
-        selected_input_face_index=0 # Not relevant for 'all_input' mode
+        selected_index=0
     )
 
     # Find the generated output file and rename it
