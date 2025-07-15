@@ -4,6 +4,7 @@ import gradio as gr
 import roop.globals
 import roop.metadata
 import roop.utilities as util
+from roop.globals import Settings
 
 roop.globals.keep_fps = None
 roop.globals.keep_frames = None
@@ -12,6 +13,7 @@ roop.globals.use_batch = None
 
 
 def prepare_environment():
+    roop.globals.CFG = Settings('config_colab.yaml')
     roop.globals.output_path = os.path.abspath(os.path.join(os.getcwd(), "output"))
     os.makedirs(roop.globals.output_path, exist_ok=True)
     if not roop.globals.CFG.use_os_temp_folder:

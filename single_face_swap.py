@@ -59,6 +59,8 @@ def run():
     roop_globals.selected_enhancer = args.enhancer
     roop_globals.distance_threshold = args.similarity_threshold
     roop_globals.blend_ratio = args.blend_ratio
+    roop_globals.mask_engine = 'None'
+    roop_globals.clip_text = None
     
     # Hardcoded globals for single image swap
     roop_globals.face_swap_mode = "first" # Swap the first detected face
@@ -93,15 +95,15 @@ def run():
     batch_process_regular(
         swap_model=args.swap_model,
         output_method="File",
-        list_files_process=list_files_process,
-        mask_engine=None,
-        clip_text=None,
-        in_memory=True,
+        files=list_files_process,
+        masking_engine=roop_globals.mask_engine,
+        new_clip_text=roop_globals.clip_text,
+        use_new_method=True,
         imagemask=None,
         restore_original_mouth=False,
         num_swap_steps=1,
         progress=None,
-        selected_input_face_index=0
+        selected_index=0
     )
 
     # Find the generated output file and rename it
