@@ -131,6 +131,8 @@ class ProcessMgr():
 
         newprocessors = []
         for key, extoption in options.processors.items():
+            if key == 'None':
+                continue
             p = self.reuseOldProcessor(key)
             if p is None:
                 classname = self.plugins[key]
