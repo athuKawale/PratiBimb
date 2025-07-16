@@ -67,6 +67,7 @@ def run():
     roop_globals.subsample_size = 128
     roop_globals.mask_engine = 'None'
     roop_globals.clip_text = None
+    roop_globals.execution_providers=["CUDAExecutionProvider"]
 
     # Load source faces
     print("Analyzing source images...")

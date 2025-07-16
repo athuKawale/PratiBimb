@@ -70,6 +70,9 @@ def run():
     roop_globals.vr_mode = False
     roop_globals.autorotate_faces = True
     roop_globals.subsample_size = 128
+    roop_globals.execution_providers=["CUDAExecutionProvider"]
+    roop_globals.mask_engine = 'None'
+    roop_globals.clip_text = None
 
     # Load source face
     print("Analyzing source image...")
@@ -109,10 +112,10 @@ def run():
     batch_process_regular(
         swap_model=args.swap_model,
         output_method="File",
-        list_files_process=list_files_process,
-        mask_engine=None,
-        clip_text=None,
-        in_memory=True,
+        files=list_files_process,
+        masking_engine=roop_globals.mask_engine,
+        new_clip_text=roop_globals.clip_text,
+        use_new_method=True,
         imagemask=None,
         restore_original_mouth=False,
         num_swap_steps=1,
