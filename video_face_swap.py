@@ -13,7 +13,8 @@ from roop.face_util import extract_face_images
 from roop.ProcessEntry import ProcessEntry
 from roop.FaceSet import FaceSet
 from roop import utilities as util
-from ui.main import prepare_environment
+from prepare_env import prepare_environment
+from roop.capturer import get_video_frame_total
 
 def get_args():
     """Parses command-line arguments."""
@@ -91,7 +92,7 @@ def run():
     # Prepare target file process entry
     list_files_process = []
     process_entry = ProcessEntry(args.target_video, 0, 0, 0)
-    total_frames = util.get_video_frame_total(args.target_video)
+    total_frames = get_video_frame_total(args.target_video)
     if total_frames is None or total_frames < 1:
         print(f"Warning: Could not read total frames from video {args.target_video}")
         total_frames = 1
