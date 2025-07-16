@@ -121,7 +121,7 @@ def run():
         restore_original_mouth=False,
         num_swap_steps=1,
         progress=None,
-        selected_input_face_index=0
+        selected_index=0
     )
 
     # Find the generated output file and rename it
