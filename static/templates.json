@@ -1,56 +1,155 @@
-
 {
-    "available_templates": [
-        {
-            "template_id": "1",
-            "filename": "1.jpg",
-            "signed_template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/1.jpg?AWSAccessKeyId=immersouser&Signature=QFExB19TQsxkGB6DqdZ4PhWfZOY%3D&Expires=1752750885"
-        },
-        {
-            "template_id": "10",
-            "filename": "10.jpg",
-            "signed_template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/10.jpg?AWSAccessKeyId=immersouser&Signature=53N1OPNJuPph298HPzgz4hJG9Pw%3D&Expires=1752750885"
-        },
-        {
-            "template_id": "2",
-            "filename": "2.jpg",
-            "signed_template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/2.jpg?AWSAccessKeyId=immersouser&Signature=EdEySvaFTR9Lt5EA1pyltPjBQYw%3D&Expires=1752750885"
-        },
-        {
-            "template_id": "3",
-            "filename": "3.jpg",
-            "signed_template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/3.jpg?AWSAccessKeyId=immersouser&Signature=wVonAuzHs89AsQwHRIzYhhRK68E%3D&Expires=1752750885"
-        },
-        {
-            "template_id": "4",
-            "filename": "4.jpg",
-            "signed_template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/4.jpg?AWSAccessKeyId=immersouser&Signature=cxsp7ae92ykpwHJNynrAMr9OqCY%3D&Expires=1752750885"
-        },
-        {
-            "template_id": "5",
-            "filename": "5.jpg",
-            "signed_template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/5.jpg?AWSAccessKeyId=immersouser&Signature=4kKMZF8JlUTLGT5wz0HHwh5%2Fbc0%3D&Expires=1752750885"
-        },
-        {
-            "template_id": "6",
-            "filename": "6.jpg",
-            "signed_template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/6.jpg?AWSAccessKeyId=immersouser&Signature=iIbyc%2BU2YL7PfChH88kuBK0sbfE%3D&Expires=1752750885"
-        },
-        {
-            "template_id": "7",
-            "filename": "7.jpg",
-            "signed_template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/7.jpg?AWSAccessKeyId=immersouser&Signature=FUvrX6d8ZM24mOw39fqXPRcrODQ%3D&Expires=1752750885"
-        },
-        {
-            "template_id": "8",
-            "filename": "8.jpg",
-            "signed_template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/8.jpg?AWSAccessKeyId=immersouser&Signature=n1rG0JnKNrvbwq%2FRqi7bEAx1FsQ%3D&Expires=1752750885"
-        },
-        {
-            "template_id": "9",
-            "filename": "9.jpg",
-            "signed_template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/9.jpg?AWSAccessKeyId=immersouser&Signature=DrHB0sQLZt3CNSINOwkpf1vuTtk%3D&Expires=1752750885"
-        }
-    ],
-    "count": 10
+  "available_templates": [
+    {
+      "template_id": "1",
+      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/1.jpg?AWSAccessKeyId=immersouser&Signature=G2aBh0yX%2FIfgzV4RLtV6QFZG6vQ%3D&Expires=1752909264",
+      "face_count": 1,
+      "template_filename": "1.jpg",
+      "is_multi_face": false,
+      "credits": 20,
+      "image_dimensions": {
+        "width": 380,
+        "height": 450,
+        "channels": 3
+      },
+      "file_size_bytes": 179375,
+      "swap_type": "Single-face"
+    },
+    {
+      "template_id": "2",
+      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/2.jpg?AWSAccessKeyId=immersouser&Signature=mqYZT8gOpmCPO1DfBLh2roIJ7Ng%3D&Expires=1752909386",
+      "face_count": 1,
+      "template_filename": "2.jpg",
+      "is_multi_face": false,
+      "credits": 20,
+      "image_dimensions": {
+        "width": 380,
+        "height": 450,
+        "channels": 3
+      },
+      "file_size_bytes": 149103,
+      "swap_type": "Single-face"
+    },
+    {
+      "template_id": "3",
+      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/3.jpg?AWSAccessKeyId=immersouser&Signature=%2FvoQomyUOqt675cuhWMH36e5rDE%3D&Expires=1752909410",
+      "face_count": 5,
+      "template_filename": "3.jpg",
+      "is_multi_face": true,
+      "credits": 40,
+      "image_dimensions": {
+        "width": 380,
+        "height": 450,
+        "channels": 3
+      },
+      "file_size_bytes": 189767,
+      "swap_type": "Multi-face"
+    },
+    {
+      "template_id": "4",
+      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/4.jpg?AWSAccessKeyId=immersouser&Signature=kKlbnrRs0SzWLG6mdnatg%2FevbTQ%3D&Expires=1752909428",
+      "face_count": 2,
+      "template_filename": "4.jpg",
+      "is_multi_face": true,
+      "credits": 40,
+      "image_dimensions": {
+        "width": 380,
+        "height": 450,
+        "channels": 3
+      },
+      "file_size_bytes": 158666,
+      "swap_type": "Multi-face"
+    },
+    {
+      "template_id": "5",
+      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/5.jpg?AWSAccessKeyId=immersouser&Signature=9yifmES95fz6dIDJWAuIGSQEyzE%3D&Expires=1752909450",
+      "face_count": 1,
+      "template_filename": "5.jpg",
+      "is_multi_face": false,
+      "credits": 20,
+      "image_dimensions": {
+        "width": 380,
+        "height": 450,
+        "channels": 3
+      },
+      "file_size_bytes": 144935,
+      "swap_type": "Single-face"
+    },
+    {
+      "template_id": "6",
+      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/6.jpg?AWSAccessKeyId=immersouser&Signature=QGI5o%2FKuokfvCp1U%2FVMGULyUwPY%3D&Expires=1752909468",
+      "face_count": 1,
+      "template_filename": "6.jpg",
+      "is_multi_face": false,
+      "credits": 20,
+      "image_dimensions": {
+        "width": 380,
+        "height": 450,
+        "channels": 3
+      },
+      "file_size_bytes": 113903,
+      "swap_type": "Single-face"
+    },
+    {
+      "template_id": "7",
+      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/7.jpg?AWSAccessKeyId=immersouser&Signature=kaf%2Bmqkht9zQS41x%2FgvyMFMcAp8%3D&Expires=1752909486",
+      "face_count": 2,
+      "template_filename": "7.jpg",
+      "is_multi_face": true,
+      "credits": 40,
+      "image_dimensions": {
+        "width": 380,
+        "height": 450,
+        "channels": 3
+      },
+      "file_size_bytes": 183634,
+      "swap_type": "Multi-face"
+    },
+    {
+      "template_id": "8",
+      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/8.jpg?AWSAccessKeyId=immersouser&Signature=ujV7Cr%2FWRwTvyx5xIIWvnPRhrXE%3D&Expires=1752909504",
+      "face_count": 3,
+      "template_filename": "8.jpg",
+      "is_multi_face": true,
+      "credits": 40,
+      "image_dimensions": {
+        "width": 380,
+        "height": 450,
+        "channels": 3
+      },
+      "file_size_bytes": 188916,
+      "swap_type": "Multi-face"
+    },
+    {
+      "template_id": "9",
+      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/9.jpg?AWSAccessKeyId=immersouser&Signature=ekxJvCFT9uMo2glaPTIJYrYnxxM%3D&Expires=1752909519",
+      "face_count": 2,
+      "template_filename": "9.jpg",
+      "is_multi_face": true,
+      "credits": 40,
+      "image_dimensions": {
+        "width": 380,
+        "height": 450,
+        "channels": 3
+      },
+      "file_size_bytes": 161343,
+      "swap_type": "Multi-face"
+    },
+    {
+      "template_id": "10",
+      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/10.jpg?AWSAccessKeyId=immersouser&Signature=WLbaut1f4dlExviErLCfRamggmU%3D&Expires=1752910225",
+      "face_count": 1,
+      "template_filename": "10.jpg",
+      "is_multi_face": false,
+      "credits": 20,
+      "image_dimensions": {
+        "width": 380,
+        "height": 450,
+        "channels": 3
+      },
+      "file_size_bytes": 231594,
+      "swap_type": "Single-face"
+    }
+  ],
+  "count": 10
 }
