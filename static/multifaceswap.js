@@ -15,6 +15,7 @@ document.getElementById('source-images').addEventListener('change', function (ev
     }
 });
 
+
 // Target image: show preview and trigger face detection
 document.getElementById('target-image').addEventListener('change', function (event) {
     const file = event.target.files[0];
@@ -37,6 +38,7 @@ document.getElementById('target-image').addEventListener('change', function (eve
     }
 });
 
+
 // Stub function to simulate face detection
 function detectFacesInTarget(imageURL) {
     const container = document.getElementById('detectedFacesContainer');
@@ -56,11 +58,56 @@ function detectFacesInTarget(imageURL) {
     }
 }
 
-// Stub for main swap logic
-function swapFaces() {
-    const targetPreview = document.getElementById('targetPreview');
+
+// Main swap logic: calls multifaceswap API and updates output image
+async function swapFaces() {
+    const sourceInput = document.getElementById('source-images');
+    const targetInput = document.getElementById('target-image');
     const outputPreview = document.getElementById('outputPreview');
-    if (targetPreview.src) {
-        outputPreview.src = targetPreview.src;
+
+    // Basic client-side validation
+    if (sourceInput.files.length === 0) {
+        alert("Please select at least one source image.");
+        return;
+    }
+    if (targetInput.files.length === 0) {
+        alert("Please select a target image.");
+        return;
+    }
+
+    const formData = new FormData();
+    // Append all source images
+    for (let i = 0; i < sourceInput.files.length; i++) {
+        formData.append('source_images', sourceInput.files[i]);
+    }
+    // Append target image
+    formData.append('target_image', targetInput.files[0]);
+
+    try {
+        // POST to backend API endpoint
+        const response = await fetch('/api/v1/multifaceswap', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            // Try to extract meaningful error message
+            let errorText = "Unknown error occurred.";
+            try {
+                const errorData = await response.json();
+                errorText = errorData.error || errorText;
+            } catch (_) {}
+            alert('Face swap failed: ' + errorText);
+            return;
+        }
+
+        // Get returned swapped image as a blob
+        const blob = await response.blob();
+        const imageUrl = URL.createObjectURL(blob);
+
+        // Set output image preview
+        outputPreview.src = imageUrl;
+    } catch (error) {
+        alert('Failed to swap faces: ' + error.message);
     }
 }
