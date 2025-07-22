@@ -3,12 +3,17 @@ from fastapi import FastAPI, HTTPException
 from typing import List, Dict, Any
 
 import json
+import os
+from fastapi import Form
+import requests
 
 app = FastAPI(
     title="Face Swap API",
     description="An API for performing face swaps and managing templates.",
     version="1.0.0"
 )
+
+UPLOAD_TEMPLATES_DIR = "static/uploads"
 
 # Load templates from the JSON file
 with open("static/templates.json", "r") as f:
@@ -44,6 +49,32 @@ async def get_template_info(template_id: str):
         if template.get("template_id") == template_id:
             return template
     raise HTTPException(status_code=404, detail=f"Template with ID '{template_id}' not found.")
+
+@app.post("/upload_template")
+async def upload_template(template_id: str = Form(...), user_id: str = Form(...)):
+    
+    for template in TEMPLATES_DATA.get("available_templates", []):
+        if template.get("template_id") == template_id:
+            img_url = template.get("template_url")
+            break
+    else:
+        raise HTTPException(status_code=404, detail=f"Template with ID '{template_id}' not found.")\
+    
+    response = requests.get(img_url)
+    if response.status_code == 200:
+        with open(os.path.join(UPLOAD_TEMPLATES_DIR, f"template_{template_id}_{user_id}.jpg"), 'wb') as f:
+            f.write(response.content)
+        print(f"Template image for {template_id} downloaded successfully.")
+    elif response.status_code == 404:
+        raise HTTPException(status_code=404, detail=f"Template image for '{template_id}' not found at the provided URL.")
+    else:
+        raise HTTPException(status_code=500, detail="Failed to download the template image.")
+    
+    
+    file_path = os.path.join(UPLOAD_TEMPLATES_DIR, f"{user_id}_{template_id}.txt")
+    with open(file_path, "w") as f:
+        f.write(f"This is a placeholder for the template {template_id} uploaded by {user_id}.")
+    return {"message": f"Template '{template_id}' uploaded successfully for user '{user_id}'."}
 
 if __name__ == "__main__":
     import uvicorn
