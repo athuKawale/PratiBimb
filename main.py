@@ -50,6 +50,8 @@ async def get_template_info(template_id: str):
             return template
     raise HTTPException(status_code=404, detail=f"Template with ID '{template_id}' not found.")
 
+import uuid
+
 @app.post("/upload_template")
 async def upload_template(template_id: str = Form(...), user_id: str = Form(...)):
     
@@ -58,11 +60,14 @@ async def upload_template(template_id: str = Form(...), user_id: str = Form(...)
             img_url = template.get("template_url")
             break
     else:
-        raise HTTPException(status_code=404, detail=f"Template with ID '{template_id}' not found.")\
-    
+        raise HTTPException(status_code=404, detail=f"Template with ID '{template_id}' not found.")
+
     response = requests.get(img_url)
     if response.status_code == 200:
-        with open(os.path.join(UPLOAD_TEMPLATES_DIR, f"template_{template_id}_{user_id}.jpg"), 'wb') as f:
+        output_dir = f"static/Face-swap/Templates/{template_id}"
+        os.makedirs(output_dir, exist_ok=True)
+        file_path = os.path.join(output_dir, f"{user_id}_template.jpg")
+        with open(file_path, 'wb') as f:
             f.write(response.content)
         print(f"Template image for {template_id} downloaded successfully.")
     elif response.status_code == 404:
@@ -70,11 +75,28 @@ async def upload_template(template_id: str = Form(...), user_id: str = Form(...)
     else:
         raise HTTPException(status_code=500, detail="Failed to download the template image.")
     
+    generation_id = str(uuid.uuid4())
     
-    file_path = os.path.join(UPLOAD_TEMPLATES_DIR, f"{user_id}_{template_id}.txt")
-    with open(file_path, "w") as f:
-        f.write(f"This is a placeholder for the template {template_id} uploaded by {user_id}.")
-    return {"message": f"Template '{template_id}' uploaded successfully for user '{user_id}'."}
+    return {
+        "message": "Template uploaded successfully",
+        "generation_id": generation_id,
+        "template_id": template_id,
+        "template_url": f"/static/Face-swap/Templates/{template_id}.jpg",
+        "masked_face_url": f"/static/Face-swap/results/{generation_id}/{template_id}_{generation_id}_masked.jpg",
+        "signed_masked_face_url": f"/static/Face-swap/results/{generation_id}/{template_id}_{generation_id}_masked.jpg?dummy_signed_url",
+        "detected_face_urls": [
+            f"/static/results/{generation_id}/face_0_{generation_id}.jpg"
+        ],
+        "signed_detected_face_urls": [
+            f"/static/results/{generation_id}/face_0_{generation_id}.jpg?dummy_signed_url"
+        ],
+        "template_face_indices": [0],
+        "template_face_count": 1,
+        "is_multi_face": False,
+        "credits": 20,
+        "status": "processing",
+        "transcoding": None
+    }
 
 if __name__ == "__main__":
     import uvicorn
