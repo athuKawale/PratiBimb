@@ -17,3 +17,4 @@ tqdm==4.66.4
 ftfy
 regex
 pyvirtualcam
+matplotlib-inline
