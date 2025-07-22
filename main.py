@@ -2,11 +2,13 @@
 import os
 import shutil
 import subprocess
-from fastapi import FastAPI, File, HTTPException, UploadFile
+import uuid
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from typing import List, Dict, Any
 import json
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 app = FastAPI(
     title="Face Swap API",
@@ -14,11 +16,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-SOURCE_DIR = "static/multifaceswap"
-TARGET_DIR = "static/multifaceswap"
-OUTPUT_PATH = "output/output.jpg"
-os.makedirs(SOURCE_DIR, exist_ok=True)
-os.makedirs(os.path.dirname(OUTPUT_PATH), exist_ok=True)
+BASE_URL = "http://localhost:8000/FaceSwap/results"
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
@@ -58,52 +56,65 @@ async def get_template_info(template_id: str):
     raise HTTPException(status_code=404, detail=f"Template with ID '{template_id}' not found.")
 
 
-@app.get("/multifaceswap", response_class=HTMLResponse)
-async def read_multifaceswap_page():
-    file_path = os.path.join("static", "multifaceswap.html")
-    with open(file_path, "r", encoding="utf-8") as f:
-        html_content = f.read()
-    return HTMLResponse(content=html_content)
-
-@app.post("/api/v1/multifaceswap")
-async def multiface_swap(
-    source_images: List[UploadFile] = File(...),
-    target_image: UploadFile = File(...)
+@app.post("/upload_targets")
+async def upload_targets(
+    files: List[UploadFile] = File(...),
+    user_id: str = Form(...),
+    generation_id: str = Form(...)
 ):
-    # Save uploaded source images
-    source_paths = []
-    for idx, image in enumerate(source_images):
-        source_path = os.path.join(SOURCE_DIR, f"s{idx+1}.jpg")
-        with open(source_path, "wb") as f:
-            shutil.copyfileobj(image.file, f)
-        source_paths.append(source_path)
+    # Create directory path, e.g. user_id/generation_id/
+    upload_dir = Path(user_id) / generation_id
+    upload_dir.mkdir(parents=True, exist_ok=True)
 
-    # Save uploaded target image
-    target_path = os.path.join(TARGET_DIR, "target.jpg")
-    with open(target_path, "wb") as f:
-        shutil.copyfileobj(target_image.file, f)
+    saved_filenames = []
+    for idx, image_file in enumerate(files):
+        # Customize a filename pattern like in example (simulate UUID + target info)
+        unique_part = str(uuid.uuid4())
+        filename = f"{unique_part}_target_{idx}_{generation_id}.jpg"
+        file_path = upload_dir / filename
 
-    # Compose the CLI command
-    cmd = [
-        "python", "scripts/multi_face_swap.py",
-        "-s", *source_paths,
-        "-t", target_path,
-        "-o", OUTPUT_PATH,
-        "--swap-model", "InSwapper 128",
-        "--enhancer", "GFPGAN",
-        "--similarity-threshold", "0.5",
-        "--blend-ratio", "0.7"
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(image_file.file, buffer)
+
+        saved_filenames.append(filename)
+
+    # Build URLs based on saved files and generation_id
+    # Assume files are under: /Face-swap/results/{generation_id}/{filename}
+    target_urls = [f"{BASE_URL}/{generation_id}/{fn}" for fn in saved_filenames]
+
+    # Simulate signed URLs by appending dummy query params
+    def sign_url(url):
+        return url + "?AWSAccessKeyId=immersouser&Signature=dummySig&Expires=9999999999"
+
+    signed_target_urls = [sign_url(u) for u in target_urls]
+
+    # Simulate face URLs for each target as filename_face_0_ + generation_id.jpg pattern
+    target_face_urls = [
+        u.replace(".jpg", f"_face_0_{generation_id}.jpg") for u in target_urls
     ]
+    signed_target_face_urls = [sign_url(u) for u in target_face_urls]
 
-    try:
-        subprocess.run(cmd, capture_output=True, text=True, check=True)
-    except subprocess.CalledProcessError as e:
-        return JSONResponse(content={"error": e.stderr or "Face swap failed."}, status_code=500)
+    target_face_indices = [0]  # example static, assuming one face per image
+    target_face_count = len(saved_filenames)
+    status = "processing"
 
-    if os.path.exists(OUTPUT_PATH):
-        return FileResponse(OUTPUT_PATH, media_type="image/jpeg", filename="swapped_output.jpg")
-    else:
-        return JSONResponse(content={"error": "Output image not found"}, status_code=500)
+    response = {
+        "message": "Target images uploaded successfully",
+        "generation_id": generation_id,
+        "target_urls": target_urls,
+        "signed_target_urls": signed_target_urls,
+        "target_face_urls": target_face_urls,
+        "signed_target_face_urls": signed_target_face_urls,
+        "target_face_indices": target_face_indices,
+        "target_face_count": target_face_count,
+        "status": status,
+    }
+
+    return response
+
+@app.post("/swap_face")
+async def multiface_swap():
+    pass
     
     
 if __name__ == "__main__":
