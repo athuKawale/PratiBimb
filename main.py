@@ -29,6 +29,7 @@ app = FastAPI(
 )
 
 UPLOAD_TEMPLATES_DIR = "static/uploads"
+OUTPUT_DIR = "static/Face-swap/results"
 
 # Load templates from the JSON file
 with open("static/templates.json", "r") as f:
@@ -99,6 +100,7 @@ async def upload_template(template_id: str = Form(...), user_id: str = Form(...)
         source_path=file_path,  # Use file_path directly
         generation_id=generation_id,
         template_id=template_id,
+        output_dir=OUTPUT_DIR
     )
     
     # Handle cases where face processing fails
