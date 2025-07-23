@@ -20,7 +20,7 @@ from roop.ProcessEntry import ProcessEntry
 from roop.FaceSet import FaceSet
 from roop import utilities as util
 from prepare_env import prepare_environment
-from upload_template_func import process_and_save_faces
+from scripts.upload_template_func import process_and_save_faces
 
 app = FastAPI(
     title="Face Swap API",
