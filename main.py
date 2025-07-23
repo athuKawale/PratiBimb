@@ -21,6 +21,8 @@ from roop.FaceSet import FaceSet
 from roop import utilities as util
 from prepare_env import prepare_environment
 from scripts.upload_template_func import process_and_save_faces
+from scripts.upload_target_func import process_and_save_target_faces
+from fastapi import File, UploadFile
 
 app = FastAPI(
     title="Face Swap API",
@@ -126,6 +128,40 @@ async def upload_template(template_id: str = Form(...), user_id: str = Form(...)
         "credits": 20,
         "status": "processing",
         "transcoding": None
+    }
+
+@app.post("/upload_targets")
+async def upload_targets(files: List[UploadFile] = File(...), user_id: str = Form(...), generation_id: str = Form(...)):
+    
+    # Check if the generation_id is valid by checking if the directory exists
+    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
+    if not os.path.exists(generation_dir):
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "status": 400,
+                "error": "Bad Request",
+                "message": "Invalid generation_id. Please upload template first and use the generation_id returned from the upload_template endpoint."
+            }
+        )
+
+    target_urls, signed_target_urls, target_face_urls, signed_target_face_urls, target_face_indices = process_and_save_target_faces(
+        files=files,
+        user_id=user_id,
+        generation_id=generation_id,
+        output_dir=OUTPUT_DIR
+    )
+
+    return {
+        "message": "Target images uploaded successfully",
+        "generation_id": generation_id,
+        "target_urls": target_urls,
+        "signed_target_urls": signed_target_urls,
+        "target_face_urls": target_face_urls,
+        "signed_target_face_urls": signed_target_face_urls,
+        "target_face_indices": target_face_indices,
+        "target_face_count": len(target_face_urls),
+        "status": "processing"
     }
 
 if __name__ == "__main__":
