@@ -108,7 +108,7 @@ async def upload_target(
     }
 
 @app.post("/swap_face")
-async def multiface_swap():
+async def swap_face():
     pass
     
 if __name__ == "__main__":
