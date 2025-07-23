@@ -12,3 +12,4 @@ pip install -r requirements.txt
 ```bash
 NO_ALBUMENTATIONS_UPDATE="1" python main.py
 ```
+
