@@ -69,7 +69,7 @@ async def upload_target(
     generation_id: str = Form(...)
 ):
     # Save uploaded image
-    upload_dir = Path("FaceSwap/results") / user_id / generation_id
+    upload_dir = Path("FaceSwap/results") / generation_id
 
     upload_dir.mkdir(parents=True, exist_ok=True)
 
