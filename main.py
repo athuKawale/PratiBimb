@@ -239,8 +239,8 @@ async def swap_face(request: SwapFaceRequest):
             swap_model=roop_globals.face_swapper_model,
             output_method="File",
             files=list_files_process,
-            masking_engine=None, # roop_globals.mask_engine is not explicitly set, so it's None
-            new_clip_text=None, # roop_globals.clip_text is not explicitly set, so it's None
+            masking_engine=None,
+            new_clip_text=None,
             use_new_method=True,
             imagemask=None,
             restore_original_mouth=False,
