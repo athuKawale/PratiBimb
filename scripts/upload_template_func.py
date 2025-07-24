@@ -21,7 +21,7 @@ def process_and_save_faces(source_path, generation_id, template_id, output_dir):
         print("Error: No face detected in the source image.")
         return None, []
     
-    print(source_faces_data)
+    # print(source_faces_data)
     
     # Create output directories
     results_dir = Path(output_dir) / str(generation_id)

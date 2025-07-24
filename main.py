@@ -197,6 +197,7 @@ async def swap_face(request: SwapFaceRequest):
     source_indices = request.source_indices
     target_indices = request.target_indices
     generation_dir = os.path.join(OUTPUT_DIR, generation_id)
+    prepare_environment()
 
     generation_data = GENERATION_DATA.get(generation_id)
     if not generation_data:
@@ -224,11 +225,20 @@ async def swap_face(request: SwapFaceRequest):
     roop_globals.output_path = os.path.join(generation_dir, output_filename)
 
     # Perform face swap
+    
+    list_files_process = [ProcessEntry(roop_globals.target_path, 0, 1, 0)]
+    print(f"Target set to: {roop_globals.target_path}")
+    
+    # Set some more required globals
+    roop_globals.execution_threads = roop_globals.CFG.max_threads
+    roop_globals.max_memory = roop_globals.CFG.memory_limit if roop_globals.CFG.memory_limit > 0 else None
+
+    
     try:
         batch_process_regular(
             swap_model=roop_globals.face_swapper_model,
             output_method="File",
-            files=[ProcessEntry(roop_globals.target_path, 0, 1, 0)],
+            files=list_files_process,
             masking_engine=None, # roop_globals.mask_engine is not explicitly set, so it's None
             new_clip_text=None, # roop_globals.clip_text is not explicitly set, so it's None
             use_new_method=True,
@@ -241,7 +251,7 @@ async def swap_face(request: SwapFaceRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Face swap failed: {str(e)}")
 
-    swapped_image_url = f"/{OUTPUT_DIR}/{generation_id}_output/{output_filename}"
+    swapped_image_url = f"/{OUTPUT_DIR}/{generation_id}/{output_filename}"
     signed_swapped_image_url = f"{swapped_image_url}?dummy_signed_url"
 
     return {
