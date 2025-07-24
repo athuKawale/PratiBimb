@@ -4,7 +4,9 @@ import numpy as np
 from pathlib import Path
 from fastapi import UploadFile
 from typing import List
+from roop.FaceSet import FaceSet
 from roop.face_util import extract_face_images
+from roop import globals as roop_globals
 
 def process_and_save_target_faces(files: List[UploadFile], user_id: str, generation_id: str, output_dir: str):
     target_urls = []
@@ -27,6 +29,14 @@ def process_and_save_target_faces(files: List[UploadFile], user_id: str, generat
         signed_target_urls.append(f"/{output_dir}/{generation_id}/{target_filename}?dummy_signed_url")
         
         target_faces_data = extract_face_images(str(target_path), (False, 0))
+        
+        face_set = FaceSet()
+        face, _ = target_faces_data[0]
+        face.mask_offsets = (0,0,0,0,1,20)  # Default mask offsets
+        face_set.faces.append(face)
+        
+        roop_globals.INPUT_FACESETS.append(face_set)
+        print(f"Found {len(target_faces_data)} face(s), applying mask.")
         
         if not target_faces_data:
             continue

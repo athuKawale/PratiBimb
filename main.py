@@ -97,8 +97,8 @@ async def upload_template(template_id: str = Form(...), user_id: str = Form(...)
     
     generation_id = str(uuid.uuid4())
     
-    roop_globals.source_path = file_path
-    
+    roop_globals.target_path = file_path
+    print(file_path)
     # Process faces and get URLs
     masked_face_url, detected_face_urls = process_and_save_faces(
         source_path=file_path,  # Use file_path directly
@@ -197,7 +197,7 @@ async def swap_face(request: SwapFaceRequest):
         )
 
     # Set roop_globals for face swapping
-    roop_globals.source_path = generation_data["template_path"]
+    roop_globals.target_path = generation_data["template_path"]
     roop_globals.reference_face_position = source_indices[0] if source_indices else 0 # Use the first source index, or 0 if not provided
 
     if not generation_data["target_paths"]:
@@ -205,7 +205,7 @@ async def swap_face(request: SwapFaceRequest):
     
     # Select the target image based on the first target_index provided
     target_image_path = generation_data["target_paths"][target_indices[0]] if target_indices else generation_data["target_paths"][0]
-    roop_globals.target_path = target_image_path
+    roop_globals.source_path = target_image_path
     
     output_filename = f"swapped_{generation_id}.jpg"
     roop_globals.output_path = os.path.join(generation_dir, output_filename)
