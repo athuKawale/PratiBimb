@@ -16,7 +16,7 @@ def process_and_save_faces(source_path, generation_id, template_id, output_dir):
     print("Analyzing source image...")
     print(source_path)
     
-    source_faces_data = extract_face_images(roop_globals.source_path, (False, 0))
+    source_faces_data = extract_face_images(source_path, (False, 0))
     if not source_faces_data:
         print("Error: No face detected in the source image.")
         return None, []
@@ -30,14 +30,6 @@ def process_and_save_faces(source_path, generation_id, template_id, output_dir):
     # Load the original image
     original_image = cv2.imread(source_path)
     output_image = original_image.copy()
-    
-    face_set = FaceSet()
-    face, _ = source_faces_data[0]
-    face.mask_offsets = (0,0,0,0,1,20)  # Default mask offsets
-    face_set.faces.append(face)
-    
-    roop_globals.INPUT_FACESETS.append(face_set)
-    print(f"Found {len(source_faces_data)} face(s), applying mask.")
 
     try:
         overlay = np.zeros_like(original_image, dtype=np.uint8)
