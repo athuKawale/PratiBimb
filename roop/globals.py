@@ -51,6 +51,25 @@ IMAGE_CHAIN_PROCESSOR = None
 VIDEO_CHAIN_PROCESSOR = None
 BATCH_IMAGE_CHAIN_PROCESSOR = None
 
-CFG: Settings = None
+# Hard-coded Settings instance
+CFG: Settings = Settings.__new__(Settings)
+CFG.selected_theme = "Default"
+CFG.server_name = ""
+CFG.server_port = 0
+CFG.server_share = False
+CFG.output_image_format = "png"
+CFG.output_video_format = "mp4"
+CFG.output_video_codec = "libx264"
+CFG.video_quality = 14
+CFG.clear_output = True
+CFG.max_threads = 2
+CFG.memory_limit = 0
+CFG.provider = "cuda"
+CFG.force_cpu = False
+CFG.output_template = "{file}_{time}"
+CFG.use_os_temp_folder = False
+CFG.output_show_video = True
+CFG.launch_browser = True
+# Add any other config values as needed
 
 

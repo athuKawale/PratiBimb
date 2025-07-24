@@ -109,7 +109,6 @@ async def upload_template(template_id: str = Form(...), user_id: str = Form(...)
         if not attr.startswith("__"):
             setattr(roop_globals, attr, getattr(globals_defaults, attr))
 
-    prepare_environment()
     roop_globals.source_path = file_path
     
     # Process faces and get URLs
@@ -197,7 +196,6 @@ async def swap_face(request: SwapFaceRequest):
     source_indices = request.source_indices
     target_indices = request.target_indices
     generation_dir = os.path.join(OUTPUT_DIR, generation_id)
-    prepare_environment()
 
     generation_data = GENERATION_DATA.get(generation_id)
     if not generation_data:
