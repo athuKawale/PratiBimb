@@ -196,6 +196,7 @@ async def swap_face(request: SwapFaceRequest):
     generation_id = request.generation_id
     source_indices = request.source_indices
     target_indices = request.target_indices
+    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
 
     generation_data = GENERATION_DATA.get(generation_id)
     if not generation_data:
@@ -220,7 +221,7 @@ async def swap_face(request: SwapFaceRequest):
     roop_globals.target_path = target_image_path
     
     output_filename = f"swapped_{generation_id}.jpg"
-    roop_globals.output_path = os.path.join(OUTPUT_DIR, output_filename)
+    roop_globals.output_path = os.path.join(generation_dir, output_filename)
 
     # Perform face swap
     try:
@@ -240,7 +241,7 @@ async def swap_face(request: SwapFaceRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Face swap failed: {str(e)}")
 
-    swapped_image_url = f"/{OUTPUT_DIR}/{generation_id}/{output_filename}"
+    swapped_image_url = f"/{OUTPUT_DIR}/{generation_id}_output/{output_filename}"
     signed_swapped_image_url = f"{swapped_image_url}?dummy_signed_url"
 
     return {
