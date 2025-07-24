@@ -6,15 +6,10 @@ import json
 import os
 from fastapi import Form
 import requests
-import cv2
-import numpy as np
-from roop.face_util import get_all_faces, extract_face_images
-from roop.processors.Frame_Masking import Frame_Masking
 import uuid
 from fastapi import FastAPI, HTTPException
 from typing import List, Dict, Any
 from roop import globals as roop_globals
-from roop import globals_defaults
 from pydantic import BaseModel
 
 class SwapFaceRequest(BaseModel):
@@ -22,12 +17,7 @@ class SwapFaceRequest(BaseModel):
     source_indices: List[int]
     target_indices: List[int]
 from roop.core import batch_process_regular
-from roop.face_util import extract_face_images
 from roop.ProcessEntry import ProcessEntry
-from roop.FaceSet import FaceSet
-from roop import utilities as util
-from prepare_env import prepare_environment
-from roop.ProcessOptions import ProcessOptions
 from scripts.upload_template_func import process_and_save_faces
 from scripts.upload_target_func import process_and_save_target_faces
 from fastapi import File, UploadFile
@@ -104,11 +94,6 @@ async def upload_template(template_id: str = Form(...), user_id: str = Form(...)
     
     generation_id = str(uuid.uuid4())
     
-        # Set default roop_globals
-    for attr in dir(globals_defaults):
-        if not attr.startswith("__"):
-            setattr(roop_globals, attr, getattr(globals_defaults, attr))
-
     roop_globals.source_path = file_path
     
     # Process faces and get URLs

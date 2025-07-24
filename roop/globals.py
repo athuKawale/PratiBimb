@@ -1,9 +1,9 @@
 from settings import Settings
 from typing import List
 
-source_path = None
-target_path = None
-output_path = None
+source_path: str = ''
+target_path: str = ''
+output_path: str = ''
 target_folder_path = None
 startup_args = None
 
@@ -11,7 +11,7 @@ cuda_device_id = 0
 frame_processors: List[str] = []
 keep_fps = None
 keep_frames = None
-autorotate_faces = None
+autorotate_faces = True
 vr_mode = None
 skip_audio = None
 wait_after_extraction = None
@@ -23,14 +23,18 @@ face_position = None
 video_encoder = None
 video_quality = None
 max_memory = None
-execution_providers: List[str] = []
+execution_providers: List[str] = ['CPUExecutionProvider']
+force_fp32: bool = False
+execution_queue_count: int = 1
 execution_threads = None
 headless = None
 log_level = 'error'
 selected_enhancer = None
 subsample_size = 128
-face_swap_mode = None
-blend_ratio = 0.5
+face_swap_mode = 'first'
+face_swapper_model: str = 'InSwapper 128' # ['InSwapper 128', 'ReSwapper 128', 'ReSwapper 256']
+blend_ratio = 1
+similarity_threshold: float = 0.80
 distance_threshold = 0.65
 default_det_size = True
 
@@ -70,6 +74,5 @@ CFG.output_template = "{file}_{time}"
 CFG.use_os_temp_folder = False
 CFG.output_show_video = True
 CFG.launch_browser = True
-# Add any other config values as needed
 
 
