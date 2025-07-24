@@ -1,10 +1,11 @@
 
 from fastapi import FastAPI, HTTPException
 from typing import List, Dict, Any
-
+import uvicorn
 import json
 import os
 from fastapi import Form
+from fastapi.staticfiles import StaticFiles
 import requests
 import uuid
 from fastapi import FastAPI, HTTPException
@@ -27,6 +28,8 @@ app = FastAPI(
     description="An API for performing face swaps and managing templates.",
     version="1.0.0"
 )
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 UPLOAD_TEMPLATES_DIR = "static/uploads"
 OUTPUT_DIR = "static/Face-swap/results"
@@ -246,5 +249,4 @@ async def swap_face(request: SwapFaceRequest):
     }
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
