@@ -204,7 +204,6 @@ async def swap_face(request: SwapFaceRequest):
         raise HTTPException(status_code=500, detail="No target images found for the given generation_id.")
     
     # Select the target image based on the first target_index provided
-    print(f"Target path : {generation_data['target_paths'][0]}")
     target_image_path = generation_data["target_paths"][0]
     roop_globals.source_path = target_image_path
     
