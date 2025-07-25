@@ -11,9 +11,7 @@ def process_and_save_faces(source_path, generation_id, template_id, output_dir):
     if not source_faces_data:
         print("Error: No face detected in the source image.")
         return None, []
-    
-    # print(source_faces_data)
-    
+        
     # Create output directories
     results_dir = Path(output_dir) / str(generation_id)
     results_dir.mkdir(parents=True, exist_ok=True)
@@ -36,7 +34,7 @@ def process_and_save_faces(source_path, generation_id, template_id, output_dir):
         alpha = 0.4
         cv2.addWeighted(overlay, alpha, output_image, 1 - alpha, 0, output_image)
 
-        masked_filename = f"{template_id}_{generation_id}_masked.jpg"
+        masked_filename = f"template_masked.jpg"
         masked_path = results_dir / masked_filename
         cv2.imwrite(str(masked_path), output_image)
         masked_face_path = f"/{output_dir}/{generation_id}/{masked_filename}"
@@ -49,7 +47,7 @@ def process_and_save_faces(source_path, generation_id, template_id, output_dir):
     detected_face_urls = []
     for i, (face, face_image) in enumerate(source_faces_data):
         try:
-            face_filename = f"face_{i}_{generation_id}.jpg"
+            face_filename = f"template_face_{i}.jpg"
             face_path = results_dir / face_filename
             cv2.imwrite(str(face_path), face_image)
             detected_face_urls.append(f"/{output_dir}/{generation_id}/{face_filename}")
