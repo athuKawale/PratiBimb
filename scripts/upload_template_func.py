@@ -1,16 +1,7 @@
-import os
 import cv2
 import numpy as np
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
-from typing import List, Dict, Any
-from roop import globals as roop_globals
-from roop.core import batch_process_regular
 from roop.face_util import extract_face_images
-from roop.ProcessEntry import ProcessEntry
-from roop.FaceSet import FaceSet
-from roop import utilities as util
-from prepare_env import prepare_environment
 
 def process_and_save_faces(source_path, generation_id, template_id, output_dir):
     print("Analyzing source image...")
