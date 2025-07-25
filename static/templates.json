@@ -2,7 +2,7 @@
   "available_templates": [
     {
       "template_id": "1",
-      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/1.jpg?AWSAccessKeyId=immersouser&Signature=G2aBh0yX%2FIfgzV4RLtV6QFZG6vQ%3D&Expires=1752909264",
+      "template_url": "https://res.cloudinary.com/ddir4923k/image/upload/v1753169503/template1_cb5lbi.jpg",
       "face_count": 1,
       "template_filename": "1.jpg",
       "is_multi_face": false,
@@ -17,7 +17,7 @@
     },
     {
       "template_id": "2",
-      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/2.jpg?AWSAccessKeyId=immersouser&Signature=mqYZT8gOpmCPO1DfBLh2roIJ7Ng%3D&Expires=1752909386",
+      "template_url": "https://res.cloudinary.com/ddir4923k/image/upload/v1753169503/template2_hi97tb.jpg",
       "face_count": 1,
       "template_filename": "2.jpg",
       "is_multi_face": false,
@@ -32,7 +32,7 @@
     },
     {
       "template_id": "3",
-      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/3.jpg?AWSAccessKeyId=immersouser&Signature=%2FvoQomyUOqt675cuhWMH36e5rDE%3D&Expires=1752909410",
+      "template_url": "https://res.cloudinary.com/ddir4923k/image/upload/v1753169502/template3_fieyjr.jpg",
       "face_count": 5,
       "template_filename": "3.jpg",
       "is_multi_face": true,
@@ -47,7 +47,7 @@
     },
     {
       "template_id": "4",
-      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/4.jpg?AWSAccessKeyId=immersouser&Signature=kKlbnrRs0SzWLG6mdnatg%2FevbTQ%3D&Expires=1752909428",
+      "template_url": "https://res.cloudinary.com/ddir4923k/image/upload/v1753169502/template4_glzigb.jpg",
       "face_count": 2,
       "template_filename": "4.jpg",
       "is_multi_face": true,
@@ -62,7 +62,7 @@
     },
     {
       "template_id": "5",
-      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/5.jpg?AWSAccessKeyId=immersouser&Signature=9yifmES95fz6dIDJWAuIGSQEyzE%3D&Expires=1752909450",
+      "template_url": "https://res.cloudinary.com/ddir4923k/image/upload/v1753169502/template5_ecfknl.jpg",
       "face_count": 1,
       "template_filename": "5.jpg",
       "is_multi_face": false,
@@ -77,7 +77,7 @@
     },
     {
       "template_id": "6",
-      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/6.jpg?AWSAccessKeyId=immersouser&Signature=QGI5o%2FKuokfvCp1U%2FVMGULyUwPY%3D&Expires=1752909468",
+      "template_url": "https://res.cloudinary.com/ddir4923k/image/upload/v1753169502/template6_fjhzd5.jpg",
       "face_count": 1,
       "template_filename": "6.jpg",
       "is_multi_face": false,
@@ -92,7 +92,7 @@
     },
     {
       "template_id": "7",
-      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/7.jpg?AWSAccessKeyId=immersouser&Signature=kaf%2Bmqkht9zQS41x%2FgvyMFMcAp8%3D&Expires=1752909486",
+      "template_url": "https://res.cloudinary.com/ddir4923k/image/upload/v1753169502/template7_b0iosz.jpg",
       "face_count": 2,
       "template_filename": "7.jpg",
       "is_multi_face": true,
@@ -107,7 +107,7 @@
     },
     {
       "template_id": "8",
-      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/8.jpg?AWSAccessKeyId=immersouser&Signature=ujV7Cr%2FWRwTvyx5xIIWvnPRhrXE%3D&Expires=1752909504",
+      "template_url": "https://res.cloudinary.com/ddir4923k/image/upload/v1753169502/template8_aco1vk.jpg",
       "face_count": 3,
       "template_filename": "8.jpg",
       "is_multi_face": true,
@@ -122,7 +122,7 @@
     },
     {
       "template_id": "9",
-      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/9.jpg?AWSAccessKeyId=immersouser&Signature=ekxJvCFT9uMo2glaPTIJYrYnxxM%3D&Expires=1752909519",
+      "template_url": "https://res.cloudinary.com/ddir4923k/image/upload/v1753169502/template9_ekibzd.jpg",
       "face_count": 2,
       "template_filename": "9.jpg",
       "is_multi_face": true,
@@ -137,7 +137,7 @@
     },
     {
       "template_id": "10",
-      "template_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/Face-swap/Templates/10.jpg?AWSAccessKeyId=immersouser&Signature=WLbaut1f4dlExviErLCfRamggmU%3D&Expires=1752910225",
+      "template_url": "https://res.cloudinary.com/ddir4923k/image/upload/v1753169502/template10_nw7eze.jpg",
       "face_count": 1,
       "template_filename": "10.jpg",
       "is_multi_face": false,
