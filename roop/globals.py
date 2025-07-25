@@ -4,6 +4,8 @@ from typing import List
 source_path: str = ''
 target_path: str = ''
 output_path: str = ''
+source_indices: List[int] = []
+target_indices: List[int] = []
 target_folder_path = None
 startup_args = None
 
@@ -31,7 +33,7 @@ headless = None
 log_level = 'error'
 selected_enhancer = None
 subsample_size = 128
-face_swap_mode = 'first'
+face_swap_mode = 'all_input'
 face_swapper_model: str = 'InSwapper 128' # ['InSwapper 128', 'ReSwapper 128', 'ReSwapper 256']
 blend_ratio = 1
 similarity_threshold: float = 0.80
