@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, HTTPException
 from typing import List, Dict, Any
 import uvicorn
@@ -214,8 +213,7 @@ async def swap_face(request: SwapFaceRequest):
     input_faceset = roop_globals.INPUT_FACESETS
     temp_faceset = []
     for i in roop_globals.target_indices:
-        if i < len(input_faceset):
-            temp_faceset.append(input_faceset[i])
+        temp_faceset.append(input_faceset[i])
     roop_globals.INPUT_FACESETS = temp_faceset
 
     # Perform face swap
