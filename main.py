@@ -210,10 +210,14 @@ async def swap_face(request: SwapFaceRequest):
     roop_globals.output_path = os.path.join(generation_dir, output_filename)
 
     # Setting Indexes 
-    input_faceset = roop_globals.INPUT_FACESETS
+    
     temp_faceset = []
-    for i in roop_globals.target_indices:
-        temp_faceset.append(input_faceset[i])
+    for i in range(len(roop_globals.TARGET_FACES)):
+        if i not in roop_globals.source_indices:
+            temp_faceset.append(roop_globals.TARGET_FACES[i])
+        else :
+            temp_faceset.append(roop_globals.INPUT_FACESETS[roop_globals.target_indices[roop_globals.source_indices.index(i)]])
+
     roop_globals.INPUT_FACESETS = temp_faceset
 
     # Perform face swap

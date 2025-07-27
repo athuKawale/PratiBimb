@@ -1,7 +1,9 @@
 import cv2
 import numpy as np
 from pathlib import Path
+from roop.FaceSet import FaceSet
 from roop.face_util import extract_face_images
+from roop import globals as roop_globals
 
 def process_and_save_faces(source_path, generation_id, template_id, output_dir):
     print("Analyzing source image...")
@@ -11,7 +13,14 @@ def process_and_save_faces(source_path, generation_id, template_id, output_dir):
     if not source_faces_data:
         print("Error: No face detected in the source image.")
         return None, []
-        
+    
+    for face_data in source_faces_data:
+        face_set = FaceSet()
+        face = face_data[0]
+        face.mask_offsets = (0,0,0,0,1,20) # Default mask offsets
+        face_set.faces.append(face)
+        roop_globals.TARGET_FACES.append(face_set)
+
     # Create output directories
     results_dir = Path(output_dir) / str(generation_id)
     results_dir.mkdir(parents=True, exist_ok=True)
