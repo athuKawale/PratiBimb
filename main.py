@@ -1,4 +1,3 @@
-
 from fastapi import FastAPI, HTTPException
 from typing import List, Dict, Any
 import uvicorn
@@ -10,7 +9,7 @@ import requests
 import uuid
 from fastapi import FastAPI, HTTPException
 from typing import List, Dict, Any
-from roop import globals as roop_globals
+from roop import FaceSet, globals as roop_globals
 from pydantic import BaseModel
 
 class SwapFaceRequest(BaseModel):
@@ -140,7 +139,7 @@ async def upload_template(template_id: str = Form(...), user_id: str = Form(...)
     }
 
 @app.post("/upload_targets")
-async def upload_targets(files: List[UploadFile] = File(...), user_id: str = Form(...), generation_id: str = Form(...)):
+async def upload_targets(file: UploadFile = File(...), user_id: str = Form(...), generation_id: str = Form(...)):
     
     # Check if the generation_id is valid by checking if the directory exists
     generation_dir = os.path.join(OUTPUT_DIR, generation_id)
@@ -155,7 +154,7 @@ async def upload_targets(files: List[UploadFile] = File(...), user_id: str = For
         )
 
     target_urls, signed_target_urls, target_face_urls, signed_target_face_urls, target_face_indices = process_and_save_target_faces(
-        files=files,
+        file=file,
         user_id=user_id,
         generation_id=generation_id,
         output_dir=OUTPUT_DIR
@@ -181,11 +180,12 @@ async def upload_targets(files: List[UploadFile] = File(...), user_id: str = For
 @app.post("/swap_face")
 async def swap_face(request: SwapFaceRequest):
     generation_id = request.generation_id
-    source_indices = request.source_indices
-    target_indices = request.target_indices
+    roop_globals.source_indices = request.source_indices
+    roop_globals.target_indices = request.target_indices
     generation_dir = os.path.join(OUTPUT_DIR, generation_id)
-
+    
     generation_data = GENERATION_DATA.get(generation_id)
+    
     if not generation_data:
         raise HTTPException(
             status_code=400,
@@ -198,17 +198,28 @@ async def swap_face(request: SwapFaceRequest):
 
     # Set roop_globals for face swapping
     roop_globals.target_path = generation_data["template_path"]
-    roop_globals.reference_face_position = source_indices[0] if source_indices else 0 # Use the first source index, or 0 if not provided
+    roop_globals.reference_face_position = roop_globals.source_indices[0] if roop_globals.source_indices else 0 # Use the first source index, or 0 if not provided
 
     if not generation_data["target_paths"]:
         raise HTTPException(status_code=500, detail="No target images found for the given generation_id.")
     
     # Select the target image based on the first target_index provided
-    target_image_path = generation_data["target_paths"][target_indices[0]] if target_indices else generation_data["target_paths"][0]
+    target_image_path = generation_data["target_paths"][0]
     roop_globals.source_path = target_image_path
     
     output_filename = f"swapped_{generation_id}.jpg"
     roop_globals.output_path = os.path.join(generation_dir, output_filename)
+
+    # Setting Indexes 
+    
+    temp_faceset = []
+    for i in range(len(roop_globals.TARGET_FACES)):
+        if i not in roop_globals.source_indices:
+            temp_faceset.append(roop_globals.TARGET_FACES[i])
+        else :
+            temp_faceset.append(roop_globals.INPUT_FACESETS[roop_globals.target_indices[roop_globals.source_indices.index(i)]])
+
+    roop_globals.INPUT_FACESETS = temp_faceset
 
     # Perform face swap
     
