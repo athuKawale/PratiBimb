@@ -155,6 +155,7 @@ async def upload_targets(file: UploadFile = File(...), user_id: str = Form(...),
 
     target_urls, signed_target_urls, target_face_urls, signed_target_face_urls, target_face_indices = process_and_save_target_faces(
         file=file,
+        user_id=user_id,
         generation_id=generation_id,
         output_dir=OUTPUT_DIR
     )

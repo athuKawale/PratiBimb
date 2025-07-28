@@ -6,7 +6,7 @@ from roop.FaceSet import FaceSet
 from roop.face_util import extract_face_images
 from roop import globals as roop_globals
 
-def process_and_save_target_faces(file: UploadFile, generation_id: str, output_dir: str):
+def process_and_save_target_faces(file: UploadFile, user_id: str, generation_id: str, output_dir: str):
     target_urls = []
     signed_target_urls = []
     target_face_urls = []
@@ -16,7 +16,7 @@ def process_and_save_target_faces(file: UploadFile, generation_id: str, output_d
     results_dir = Path(output_dir) / str(generation_id)
     results_dir.mkdir(parents=True, exist_ok=True)
 
-    target_filename = f"target.jpg"
+    target_filename = f"target_{generation_id}_{user_id}.jpg"
     target_path = results_dir / target_filename
     
     with open(target_path, "wb") as buffer:
@@ -42,7 +42,7 @@ def process_and_save_target_faces(file: UploadFile, generation_id: str, output_d
     print(f"Found {len(target_faces_data)} face(s), applying mask.")
 
     for j, (face, face_image) in enumerate(target_faces_data):
-        face_filename = f"target_face_{j}.jpg"
+        face_filename = f"target_face_{j}_{generation_id}_{user_id}.jpg"
         face_path = results_dir / face_filename
         cv2.imwrite(str(face_path), face_image)
         
