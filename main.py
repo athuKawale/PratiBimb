@@ -1,7 +1,7 @@
 import uvicorn
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from routers import faceswap
+from routers import faceswap, videoswap
 
 app = FastAPI(
     title="Face Swap API",
@@ -12,6 +12,7 @@ app = FastAPI(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 # Register routers
 app.include_router(faceswap.router)
+app.include_router(videoswap.router)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

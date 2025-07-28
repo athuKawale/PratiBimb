@@ -64,14 +64,14 @@ def run():
     roop_globals.blend_ratio = args.blend_ratio
     
     # Hardcoded globals for video swap
-    roop_globals.face_swap_mode = "first" # Swap the first detected face
+    roop_globals.face_swap_mode = "all_input" # Swap the first detected face
     roop_globals.no_face_action = 0 # Use untouched original frame
     roop_globals.keep_frames = False
     roop_globals.wait_after_extraction = False
     roop_globals.vr_mode = False
     roop_globals.autorotate_faces = True
     roop_globals.subsample_size = 128
-    roop_globals.execution_providers=["CUDAExecutionProvider"]
+    roop_globals.execution_providers=["CPUExecutionProvider"]
     roop_globals.mask_engine = 'None'
     roop_globals.clip_text = None
 
