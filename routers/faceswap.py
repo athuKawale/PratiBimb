@@ -190,7 +190,6 @@ async def swap_face(request: SwapFaceRequest):
 
     # Set roop_globals for face swapping
     roop_globals.target_path = generation_data["template_path"]
-    roop_globals.reference_face_position = roop_globals.source_indices[0] if roop_globals.source_indices else 0 # Use the first source index, or 0 if not provided
 
     if not generation_data["target_paths"]:
         raise HTTPException(status_code=500, detail="No target images found for the given generation_id.")
