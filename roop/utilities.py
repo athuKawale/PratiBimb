@@ -35,6 +35,37 @@ TEMP_DIRECTORY = "temp"
 THREAD_SEMAPHORE = threading.Semaphore()
 NULL_CONTEXT  = nullcontext()
 
+def delete_temp_directory():
+    """Delete the TEMP_DIRECTORY and all its contents."""
+    if os.path.exists(TEMP_DIRECTORY) and os.path.isdir(TEMP_DIRECTORY):
+        shutil.rmtree(TEMP_DIRECTORY)
+        print(f"Deleted temporary directory: {TEMP_DIRECTORY}")
+
+    results_dir = "static/Face-swap/results"
+    template_dir = "static/Face-swap/Templates"
+    if os.path.exists(results_dir) and os.path.isdir(results_dir) \
+         and os.path.exists(template_dir) and os.path.isdir(template_dir):
+        for filename in os.listdir(results_dir):
+            file_path = os.path.join(results_dir, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.remove(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f"Failed to delete {file_path}. Reason: {e}")
+        print(f"Deleted all files in static results directory: {results_dir}")
+
+        for filename in os.listdir(template_dir):
+            file_path = os.path.join(template_dir, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.remove(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f"Failed to delete {file_path}. Reason: {e}")
+        print(f"Deleted all files in static results directory: {template_dir}")
 
 # monkey patch ssl for mac
 if platform.system().lower() == "darwin":
