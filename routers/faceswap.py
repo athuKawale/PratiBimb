@@ -242,7 +242,10 @@ async def swap_face(request: SwapFaceRequest):
 
     swapped_image_url = f"/{OUTPUT_DIR}/{generation_id}/{output_filename}"
     signed_swapped_image_url = f"{swapped_image_url}?dummy_signed_url"
-
+    
+    roop_globals.INPUT_FACESETS = []  # Clear the input facesets after processing
+    roop_globals.TARGET_FACES = []
+    
     return {
         "message": "Face swap completed successfully",
         "generation_id": generation_id,
