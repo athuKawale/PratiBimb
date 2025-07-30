@@ -4,6 +4,13 @@ from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
 from roop.utilities import delete_temp_directory
 from routers import faceswap, videoswap
+import warnings
+import atexit
+
+def suppress_resource_tracker_warning():
+    warnings.filterwarnings("ignore", message="resource_tracker: There appear to be .* leaked semaphore objects")
+
+atexit.register(suppress_resource_tracker_warning)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -29,4 +36,3 @@ app.include_router(videoswap.router)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True)
-    

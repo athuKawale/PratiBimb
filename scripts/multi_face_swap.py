@@ -13,7 +13,6 @@ from roop.face_util import extract_face_images
 from roop.ProcessEntry import ProcessEntry
 from roop.FaceSet import FaceSet
 from roop import utilities as util
-from prepare_env import prepare_environment
 
 def get_args():
     """Parses command-line arguments."""
@@ -50,7 +49,6 @@ def run():
     output_dir = os.path.dirname(args.output_file)
     os.makedirs(output_dir, exist_ok=True)
     
-    prepare_environment()
     roop_globals.output_path = output_dir
     if roop_globals.CFG.clear_output:
         util.clean_dir(roop_globals.output_path)

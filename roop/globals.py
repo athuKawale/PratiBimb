@@ -2,6 +2,7 @@ from settings import Settings
 from typing import List
 
 source_path: str = ''
+source_path_video: List[str] = []
 target_path: str = ''
 output_path: str = ''
 source_indices: List[int] = []
@@ -9,6 +10,8 @@ target_indices: List[int] = []
 target_folder_path = None
 startup_args = None
 
+mask_engine : str = 'None' 
+clip_text = None
 cuda_device_id = 0
 frame_processors: List[str] = []
 keep_frames = None
@@ -34,6 +37,7 @@ face_swapper_model: str = 'InSwapper 128' # ['InSwapper 128', 'ReSwapper 128', '
 blend_ratio = 1
 distance_threshold: float = 0.80
 default_det_size = True
+target_face_index = 0 # for video face swap, index of the face in the first frame to track and swap
 
 no_face_action = 0
 
@@ -56,7 +60,7 @@ CFG.output_video_format = "mp4"
 CFG.output_video_codec = "libx264"
 CFG.video_quality = 14
 CFG.clear_output = True
-CFG.max_threads = 2
+CFG.max_threads = 4
 CFG.memory_limit = 0
 CFG.provider = "cuda"
 CFG.force_cpu = False
