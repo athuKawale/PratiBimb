@@ -43,9 +43,10 @@ GENERATION_DATA = {
     "detected_faces_urls": {},
     "total_face_groups": 0,
     "thumbnail_url": "",
-    "list_files_process": [],
     "target_url": "http://localhost:8000/",
     "created_at": "",
+    "iteration": 0,
+    "exiting_progress" : 0,
 }
 
 # Background task to run face swap
@@ -57,29 +58,61 @@ def run_face_swap_blocking(group_ids, generation_id):
 async def run_face_swap(group_ids: list, generation_id: str):
 
     log_and_print("Starting face swap process...")  
-    
-    if len(roop_globals.INPUT_FACESETS) != len(group_ids):
-        temp_facesets = []
-        for i in group_ids: 
-            temp_facesets.append(roop_globals.INPUT_FACESETS[int(i)])
+    Template = GENERATION_DATA["templatePath"]
 
-        roop_globals.INPUT_FACESETS = temp_facesets
+    for i in group_ids:
 
-    with open(log_file_path, 'a') as f:
-        with redirect_stdout(f), redirect_stderr(f):
-            batch_process_regular(
-                swap_model="InSwapper 128",
-                output_method="File",
-                files=GENERATION_DATA["list_files_process"],
-                masking_engine=roop_globals.mask_engine,
-                new_clip_text=roop_globals.clip_text,
-                use_new_method=True,
-                imagemask=None,
-                restore_original_mouth=False,
-                num_swap_steps=1,
-                progress=None,
-                selected_index=0
-            )
+        roop_globals.INPUT_FACESETS = [roop_globals.VIDEO_INPUTFACES[i]]
+
+        # Move Embedding of faces to faces[0]  and setting faces embedding to None so that averageEmbeddings can be calculated.
+        roop_globals.TARGET_FACES[0].faces[0].embedding = roop_globals.TARGET_FACES[0].embedding
+        roop_globals.TARGET_FACES[0].embedding = None
+
+        # getting i-th target face at front of list so that it is swapped
+        temp = roop_globals.TARGET_FACES[0].faces[0]
+        roop_globals.TARGET_FACES[0].faces[0] = roop_globals.TARGET_FACES[0].faces[i]
+        roop_globals.TARGET_FACES[0].faces[i] = temp
+
+        roop_globals.TARGET_FACES[0].AverageEmbeddings()
+
+        # Prepare target file process entry
+        list_files_process = []
+        process_entry = ProcessEntry(Template, 0, 0, 0)
+        total_frames = get_video_frame_total(Template)
+
+        if total_frames is None or total_frames < 1:
+            print(f"Warning: Could not read total frames from video {Template}")
+            total_frames = 1
+
+        process_entry.endframe = total_frames
+        list_files_process.append(process_entry)
+
+
+        with open(log_file_path, 'a') as f:
+            with redirect_stdout(f), redirect_stderr(f):
+                batch_process_regular(
+                    swap_model="InSwapper 128",
+                    output_method="File",
+                    files=list_files_process,
+                    masking_engine=roop_globals.mask_engine,
+                    new_clip_text=roop_globals.clip_text,
+                    use_new_method=True,
+                    imagemask=None,
+                    restore_original_mouth=False,
+                    num_swap_steps=1,
+                    progress=None,
+                    selected_index=0
+                )
+        
+        GENERATION_DATA["iteration"] = GENERATION_DATA["iteration"] + 1
+
+        Template = glob.glob(os.path.join(roop_globals.output_path, '*.mp4'))[0]
+        os.rename(Template, os.path.join(roop_globals.output_path, "output.mp4"))
+        Template = os.path.join(roop_globals.output_path, "output.mp4")
+
+    roop_globals.INPUT_FACESETS = []
+    roop_globals.TARGET_FACES = []
+    roop_globals.VIDEO_INPUTFACES = []
 
     list_of_files = glob.glob(os.path.join(roop_globals.output_path, '*.mp4'))
 
@@ -90,8 +123,7 @@ async def run_face_swap(group_ids: list, generation_id: str):
     latest_file = max(list_of_files, key=os.path.getctime)
     os.rename(latest_file, os.path.join(roop_globals.output_path, "output.mp4"))
 
-    roop_globals.INPUT_FACESETS = []
-    roop_globals.TARGET_FACES = []
+
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Face swap completed.")
 
 
@@ -116,7 +148,7 @@ def extract_last_percentage(log_file: str) -> float:
         print("file not found:", log_file)
         return 0.0
 
-    with open(log_file, "r") as f:
+    with open(log_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
 
     percent = 0.0
@@ -176,7 +208,6 @@ async def upload_video(user_id: str = Form(...), template_id: str = Form(...)):
     if roop_globals.CFG.clear_output:
         util.clean_dir(roop_globals.output_path)
 
-    roop_globals.target_face_index = 0 # Default target face index for video face swap
     roop_globals.target_path = GENERATION_DATA["templatePath"]
     roop_globals.selected_enhancer = "GFPGAN" 
     roop_globals.distance_threshold = 0.65
@@ -203,19 +234,17 @@ async def upload_video(user_id: str = Form(...), template_id: str = Form(...)):
         print("Error: No face detected in the source image.")
         sys.exit(1)
 
-    face_set = FaceSet()
+    
+    face_set = FaceSet()    
     for face_data in target_face_data:
         face = face_data[0]
         face.mask_offsets = (0,0,0,0,1,20)
         face_set.faces.append(face)
-        roop_globals.TARGET_FACES.append(face_set)
-
-    temp = face_set.faces[0]
-    face_set.faces[0] = face_set.faces[roop_globals.target_face_index]
-    face_set.faces[roop_globals.target_face_index] = temp
-    
+        
     face_set.AverageEmbeddings()
-    print(f"Found {len(target_face_data)} face(s), using the first one.")
+    roop_globals.TARGET_FACES.append(face_set)
+
+    print(f"Found {len(target_face_data)} face(s)")
 
 
     # Save cropped faces for target video
@@ -230,23 +259,6 @@ async def upload_video(user_id: str = Form(...), template_id: str = Form(...)):
         except Exception as e:
             print(f"Error saving face {i}: {e}")
             continue
-
-    # Prepare target file process entry
-    list_files_process = []
-    process_entry = ProcessEntry(GENERATION_DATA["templatePath"], 0, 0, 0)
-    total_frames = get_video_frame_total(GENERATION_DATA["templatePath"])
-
-    if total_frames is None or total_frames < 1:
-        print(f"Warning: Could not read total frames from video {GENERATION_DATA['templatePath']}")
-        total_frames = 1
-
-    process_entry.endframe = total_frames
-    list_files_process.append(process_entry)
-
-    GENERATION_DATA["list_files_process"] = list_files_process
-
-    print(f"Target set to: {GENERATION_DATA['templatePath']}")
-    print(f"Target has {process_entry.endframe} frames.")
 
 
     GENERATION_DATA["templateId"] = template_id
@@ -290,11 +302,12 @@ async def upload_new_faces(generation_id: str, group_id: str, file : UploadFile 
     if not source_faces_data:
         print("Error: No face detected in the source image.")
         sys.exit(1)
+
     face_set = FaceSet()
     face = source_faces_data[0][0]
     face.mask_offsets = (0,0,0,0,1,20)
     face_set.faces.append(face)
-    roop_globals.INPUT_FACESETS.append(face_set)
+    roop_globals.VIDEO_INPUTFACES.append(face_set)
     
     print(f"Found {len(source_faces_data)} face(s), using the first one.")
 
@@ -342,10 +355,12 @@ async def perform_face_swap(request: Request, generation_id : str):
 
 @router.get("/faceswap/status/{generation_id}")
 async def get_swap_status(generation_id: str):
-    output_file = os.path.join(roop_globals.output_path, "output.mp4")
-    log_file_path
+    
+    progress = extract_last_percentage(log_file_path)
+    current_progress = GENERATION_DATA["iteration"] *100 + progress
 
-    if os.path.exists(output_file):
+
+    if GENERATION_DATA["iteration"] == GENERATION_DATA["total_face_groups"]:
         return {
             "generation_id": GENERATION_DATA["generationId"],
             "created_at": GENERATION_DATA["created_at"],
@@ -354,8 +369,10 @@ async def get_swap_status(generation_id: str):
             "status": "finished",
             "message": "Face swap completed successfully"
         }
-    else:
-        progress = extract_last_percentage(log_file_path)
+    else:            
+        
+        progress = current_progress/ GENERATION_DATA["total_face_groups"]
+            
         return {
             "generation_id": GENERATION_DATA["generationId"],
             "created_at": GENERATION_DATA["created_at"],
