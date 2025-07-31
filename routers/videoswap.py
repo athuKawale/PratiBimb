@@ -57,6 +57,13 @@ def run_face_swap_blocking(group_ids, generation_id):
 async def run_face_swap(group_ids: list, generation_id: str):
 
     log_and_print("Starting face swap process...")  
+    
+    if len(roop_globals.INPUT_FACESETS) != len(group_ids):
+        temp_facesets = []
+        for i in group_ids: 
+            temp_facesets.append(roop_globals.INPUT_FACESETS[int(i)])
+
+        roop_globals.INPUT_FACESETS = temp_facesets
 
     with open(log_file_path, 'a') as f:
         with redirect_stdout(f), redirect_stderr(f):
@@ -83,6 +90,8 @@ async def run_face_swap(group_ids: list, generation_id: str):
     latest_file = max(list_of_files, key=os.path.getctime)
     os.rename(latest_file, os.path.join(roop_globals.output_path, "output.mp4"))
 
+    roop_globals.INPUT_FACESETS = []
+    roop_globals.TARGET_FACES = []
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] Face swap completed.")
 
 
@@ -170,7 +179,7 @@ async def upload_video(user_id: str = Form(...), template_id: str = Form(...)):
     roop_globals.target_face_index = 0 # Default target face index for video face swap
     roop_globals.target_path = GENERATION_DATA["templatePath"]
     roop_globals.selected_enhancer = "GFPGAN" 
-    roop_globals.distance_threshold = 0.80
+    roop_globals.distance_threshold = 0.65
     roop_globals.blend_ratio = 1
     roop_globals.face_swap_mode = "selected"
     roop_globals.no_face_action = 0 # Use untouched original frame
@@ -215,7 +224,9 @@ async def upload_video(user_id: str = Form(...), template_id: str = Form(...)):
             face_filename = f"target_{i}_{GENERATION_DATA['generationId']}.jpg"
             face_path = GENERATION_DATA["outputDir"] + "/" + face_filename
             cv2.imwrite(str(face_path), face_image)
-            print(f"Saved target face {i} to {face_path}")
+
+            GENERATION_DATA["detected_faces_urls"][i] = "http://localhost:8000/" + face_path
+
         except Exception as e:
             print(f"Error saving face {i}: {e}")
             continue
@@ -243,11 +254,8 @@ async def upload_video(user_id: str = Form(...), template_id: str = Form(...)):
         "1": 277,
         "0": 290
     }
-    GENERATION_DATA["detected_faces_urls"] = {
-        "1": "https://sosnm1.shakticloud.ai:9024/immersobuk01/VFS/detected-faces/09acd6e6-d1b1-4cdb-93a5-02579c6f9876/cropped_faces/1/images_559.jpg?response-content-disposition=inline&response-content-type=image%2Fjpeg&AWSAccessKeyId=immersouser&Signature=C53OXWa16NuqXIxPMO9%2B%2BBn%2B2h0%3D&Expires=1753700477",
-        "0": "https://sosnm1.shakticloud.ai:9024/immersobuk01/VFS/detected-faces/09acd6e6-d1b1-4cdb-93a5-02579c6f9876/cropped_faces/0/images_522.jpg?response-content-disposition=inline&response-content-type=image%2Fjpeg&AWSAccessKeyId=immersouser&Signature=SYuyJTgr%2FAWbOklH74Frp0zN%2FYM%3D&Expires=1753700477"
-    }
-    GENERATION_DATA["total_face_groups"] = 0
+    
+    GENERATION_DATA["total_face_groups"] = len(GENERATION_DATA["detected_faces_urls"])
 
     GENERATION_DATA["thumbnail_url"] = next((t for t in GENERATION_DATA["templateData"]["available_video_templates"] if t["template_id"] == template_id), None)
     
