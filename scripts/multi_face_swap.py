@@ -13,7 +13,6 @@ from roop.face_util import extract_face_images
 from roop.ProcessEntry import ProcessEntry
 from roop.FaceSet import FaceSet
 from roop import utilities as util
-from prepare_env import prepare_environment
 
 def get_args():
     """Parses command-line arguments."""
@@ -25,7 +24,7 @@ def get_args():
     # Simplified options from the UI
     parser.add_argument('--swap-model', dest='swap_model', default='InSwapper 128', choices=["InSwapper 128", "ReSwapper 128", "ReSwapper 256"], help='The face swapping model to use.')
     parser.add_argument('--enhancer', dest='enhancer', default='None', choices=["None", "Codeformer", "DMDNet", "GFPGAN", "GPEN", "Restoreformer++"], help='Face enhancer to use.')
-    parser.add_argument('--similarity-threshold', dest='similarity_threshold', type=float, default=0.65, help='Lower values mean more similar faces.')
+    parser.add_argument('--distance_threshold', dest='distance_threshold', type=float, default=0.65, help='Lower values mean more similar faces.')
     parser.add_argument('--blend-ratio', dest='blend_ratio', type=float, default=0.65, help='How much of the original face to blend in.')
 
     return parser.parse_args()
@@ -50,14 +49,13 @@ def run():
     output_dir = os.path.dirname(args.output_file)
     os.makedirs(output_dir, exist_ok=True)
     
-    prepare_environment()
     roop_globals.output_path = output_dir
     if roop_globals.CFG.clear_output:
         util.clean_dir(roop_globals.output_path)
 
     roop_globals.target_path = args.target_img
     roop_globals.selected_enhancer = args.enhancer
-    roop_globals.distance_threshold = args.similarity_threshold
+    roop_globals.distance_threshold = args.distance_threshold
     roop_globals.blend_ratio = args.blend_ratio
     
     # Hardcoded globals for multi-face image swap
@@ -67,7 +65,6 @@ def run():
     roop_globals.subsample_size = 128
     roop_globals.mask_engine = 'None'
     roop_globals.clip_text = None
-    roop_globals.execution_providers=["CUDAExecutionProvider"]
 
     # Load source faces
     print("Analyzing source images...")

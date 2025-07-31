@@ -22,8 +22,6 @@ import roop.globals
 import roop.metadata
 import roop.utilities as util
 import roop.util_ffmpeg as ffmpeg
-# import ui.main as main
-import prepare_env
 from settings import Settings
 from roop.face_util import extract_face_images
 from roop.ProcessEntry import ProcessEntry
@@ -396,7 +394,6 @@ def run() -> None:
     parse_args()
     if not pre_check():
         return
-    roop.globals.CFG = Settings('config.yaml')
     roop.globals.cuda_device_id = roop.globals.startup_args.cuda_device_id
     roop.globals.execution_threads = roop.globals.CFG.max_threads
     roop.globals.video_encoder = roop.globals.CFG.output_video_codec
@@ -404,4 +401,3 @@ def run() -> None:
     roop.globals.max_memory = roop.globals.CFG.memory_limit if roop.globals.CFG.memory_limit > 0 else None
     if roop.globals.startup_args.server_share:
         roop.globals.CFG.server_share = True
-    prepare_env.run()
