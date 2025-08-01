@@ -23,6 +23,7 @@ app = FastAPI(
 )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Register routers
 app.include_router(faceswap.router)
 app.include_router(videoswap.router)

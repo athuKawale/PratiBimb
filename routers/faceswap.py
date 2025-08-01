@@ -1,16 +1,15 @@
-from fastapi import APIRouter, HTTPException, Form, File, UploadFile
-from typing import List, Dict, Any
-import json
 import os
-import requests
 import uuid
+import json
+import requests
+from pydantic import BaseModel
 from typing import List, Dict, Any
 from roop import globals as roop_globals
-from pydantic import BaseModel
-from roop.core import batch_process_regular
 from roop.ProcessEntry import ProcessEntry
+from roop.core import batch_process_regular
 from scripts.upload_template_func import process_and_save_faces
 from scripts.upload_target_func import process_and_save_target_faces
+from fastapi import APIRouter, HTTPException, Form, File, UploadFile
 
 class SwapFaceRequest(BaseModel):
     generation_id: str
@@ -25,9 +24,8 @@ router = APIRouter(
 UPLOAD_TEMPLATES_DIR = "static/uploads"
 OUTPUT_DIR = "static/Face-swap/results"
 
-GENERATION_DATA = {} # Stores generation_id to template/target mapping
+GENERATION_DATA = {} 
 
-# Load templates from the JSON file
 with open("static/templates.json", "r") as f:
     TEMPLATES_DATA = json.load(f)
 
@@ -168,9 +166,9 @@ async def upload_targets(file: UploadFile = File(...), user_id: str = Form(...),
         "status": "processing"
     }
 
-
 @router.post("/swap_face")
 async def swap_face(request: SwapFaceRequest):
+    
     generation_id = request.generation_id
     roop_globals.source_indices = request.source_indices
     roop_globals.target_indices = request.target_indices
