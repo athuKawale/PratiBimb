@@ -22,6 +22,10 @@ gcloud compute config-ssh
 
 3. Connect Your VS code to ssh.
 ```bash
+bash nvidia_drivers.sh
+
+bash nvidia_drivers2.sh
+
 bash anaconda_setup.sh
 
 conda create -n pratibimb python=3.11 -y
