@@ -33,4 +33,7 @@ conda config --set auto_activate_base false
 echo 'source "$HOME/anaconda3/etc/profile.d/conda.sh"' >> "$HOME/.bashrc"
 echo 'conda activate --stack' >> "$HOME/.bashrc"
 
+# (Optional) If using Conda environments for per-project isolation:
+conda install -c conda-forge cudatoolkit cudnn nccl
+
 # Restart shell (<no need to reboot>)
