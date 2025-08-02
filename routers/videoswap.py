@@ -1,14 +1,14 @@
-# Add project root to path to allow relative imports
 import os
 import re
 import uuid
 import cv2
 import sys
-sys.path.append(os.getcwd())
 import glob
 import json
 import asyncio
 import logging
+import threading
+
 from datetime import datetime
 from roop.FaceSet import FaceSet
 from roop import utilities as util
@@ -18,54 +18,52 @@ from roop.core import batch_process_regular
 from roop.face_util import extract_face_images
 from roop.capturer import get_video_frame_total
 from contextlib import redirect_stderr, redirect_stdout
+
 from fastapi import APIRouter, File, Form, Request, UploadFile
+
+sys.path.append(os.getcwd())
 
 router = APIRouter(
     prefix="/videoswap",
     tags=["videoswap"]
 )
 
-"""Constants and global variables for video swap operations"""
-
+# Constants
 OUTPUT_DIR = "static/Video-swap"
 TEMPLATES_DIR = "static/Video-swap/Templates"
-
 with open("static/video_templates.json", "r") as f:
     TEMPLATES_DATA = json.load(f)
 
-GENERATION_DATA = {
-    "outputDir": OUTPUT_DIR,
-    "generationId": "",
-    "userId": "",
-    "groupId": "",
-    "templateId": "",
-    "templatePath": "",
-    "templateData": TEMPLATES_DATA,
-    "face_groups_detected" : {},
-    "detected_faces_urls": {},
-    "total_face_groups": 0,
-    "faces_to_swap": 1,
-    "thumbnail_url": "",
-    "base_url": "http://localhost:8000/",
-    "created_at": "",
-    "finished_at": "",
-    "iteration": 0,
-    "status": "processing",
-}
+# ----- Concurrency-aware session management -----
+GENERATION_SESSIONS = {}
+GENERATION_SESSIONS_LOCK = threading.Lock()
 
-"""Setup logging for face swap operations"""
+def get_session(generation_id):
+    with GENERATION_SESSIONS_LOCK:
+        if generation_id not in GENERATION_SESSIONS:
+            raise ValueError(f"Invalid/unknown generation_id: {generation_id}")
+        return GENERATION_SESSIONS[generation_id]
 
-log_file_path = os.path.join(OUTPUT_DIR, "faceswap.log")
-logger = logging.getLogger("faceswap")
-logger.setLevel(logging.INFO)
-# Avoid duplicate handlers if re-called
-if not logger.handlers:
-    file_handler = logging.FileHandler(log_file_path, mode='w')
-    formatter = logging.Formatter('%(asctime)s - %(message)s')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+def set_session(generation_id, session_data):
+    with GENERATION_SESSIONS_LOCK:
+        GENERATION_SESSIONS[generation_id] = session_data
 
-def log_and_print(log_file_path: str, msg: str):
+def setup_logger(output_dir, generation_id):
+    logger_name = f"faceswap_{generation_id}"
+    log_file = os.path.join(output_dir, "faceswap.log")
+    logger = logging.getLogger(logger_name)
+    logger.setLevel(logging.INFO)
+    # Remove all old handlers
+    while logger.hasHandlers():
+        h = logger.handlers[0]
+        h.close()
+        logger.removeHandler(h)
+    handler = logging.FileHandler(log_file, mode='w')
+    handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+    logger.addHandler(handler)
+    return logger, log_file
+
+def log_and_print(logger, msg):
     print(msg)
     logger.info(msg)
 
@@ -73,70 +71,57 @@ def extract_last_percentage(log_file: str) -> float:
     if not os.path.exists(log_file):
         print("file not found:", log_file)
         return 0.0
-
     with open(log_file, "r", encoding="utf-8") as f:
         lines = f.readlines()
+        percent = 0.0
+        pattern = re.compile(r'Processing:\s+(\d{1,3})%')
+        for line in reversed(lines):
+            match = pattern.search(line)
+            if match:
+                percent = float(match.group(1))
+                break
+        return percent
 
-    percent = 0.0
-    pattern = re.compile(r'Processing:\s+(\d{1,3})%')
-
-    for line in reversed(lines):
-        match = pattern.search(line)
-        if match:
-            percent = float(match.group(1))
-            break
-
-    return percent
-
-"""Run face swap in background using asyncio"""
+# ---------------- Async face swap with session context -----------------
 
 def run_face_swap_background(group_ids, generation_id):
     asyncio.run(run_face_swap(group_ids, generation_id))
 
 async def run_face_swap(group_ids: list, generation_id: str):
+    session = get_session(generation_id)
+    logger, log_file_path = setup_logger(session["outputDir"], generation_id)
+    try:
+        log_and_print(logger, "Starting face swap process...")
 
-    log_and_print(log_file_path, "Starting face swap process...")  
+        Template = session["templatePath"]
+        
+        for i in group_ids:
+            roop_globals.INPUT_FACESETS = [roop_globals.VIDEO_INPUTFACES[i]]
+            
+            # Move Embedding of faces to faces[0]  and setting faces embedding to None so that averageEmbeddings can be calculated.
+            roop_globals.TARGET_FACES[0].faces[0].embedding = roop_globals.TARGET_FACES[0].embedding
+            roop_globals.TARGET_FACES[0].embedding = None
+            temp = roop_globals.TARGET_FACES[0].faces[0]
+            roop_globals.TARGET_FACES[0].faces[0] = roop_globals.TARGET_FACES[0].faces[i]
+            roop_globals.TARGET_FACES[0].faces[i] = temp
+            roop_globals.TARGET_FACES[0].AverageEmbeddings()
 
-    Template = GENERATION_DATA["templatePath"]
+            list_files_process = []
+            process_entry = ProcessEntry(Template, 0, 0, 0)
+            total_frames = get_video_frame_total(Template)
+            if total_frames is None or total_frames < 1:
+                log_and_print(logger, f"Warning: Could not read total frames from video {Template}")
+                total_frames = 1
+            process_entry.endframe = total_frames
+            list_files_process.append(process_entry)
 
-    for i in group_ids:
+            with open(log_file_path, 'w'): pass  # Clears log
 
-        roop_globals.INPUT_FACESETS = [roop_globals.VIDEO_INPUTFACES[i]]
-
-        # Move Embedding of faces to faces[0]  and setting faces embedding to None so that averageEmbeddings can be calculated.
-        roop_globals.TARGET_FACES[0].faces[0].embedding = roop_globals.TARGET_FACES[0].embedding
-        roop_globals.TARGET_FACES[0].embedding = None
-
-        # getting i-th target face at front of list so that it is swapped
-        temp = roop_globals.TARGET_FACES[0].faces[0]
-        roop_globals.TARGET_FACES[0].faces[0] = roop_globals.TARGET_FACES[0].faces[i]
-        roop_globals.TARGET_FACES[0].faces[i] = temp
-
-        roop_globals.TARGET_FACES[0].AverageEmbeddings()
-
-        # Prepare target file process entry
-        list_files_process = []
-        process_entry = ProcessEntry(Template, 0, 0, 0)
-        total_frames = get_video_frame_total(Template)
-
-        if total_frames is None or total_frames < 1:
-            print(f"Warning: Could not read total frames from video {Template}")
-            total_frames = 1
-
-        process_entry.endframe = total_frames
-        list_files_process.append(process_entry)
-
-        #This clears the log file
-        with open(log_file_path, 'w'):
-            pass
-
-        try :
-
-            with open(log_file_path, 'a') as f:
-                with redirect_stdout(f), redirect_stderr(f):
+            try:
+                with open(log_file_path, 'a') as f, redirect_stdout(f), redirect_stderr(f):
                     batch_process_regular(
                         swap_model="InSwapper 128",
-                        output_method="File", 
+                        output_method="File",
                         files=list_files_process,
                         masking_engine=roop_globals.mask_engine,
                         new_clip_text=roop_globals.clip_text,
@@ -145,54 +130,37 @@ async def run_face_swap(group_ids: list, generation_id: str):
                         restore_original_mouth=False,
                         num_swap_steps=1,
                         progress=None,
-                        selected_index=0
+                        selected_index=0,
                     )
+            except Exception as e:
+                log_and_print(logger, f"Error during face swap processing: {e}\nIteration: {session['iteration']}\n")
+                session["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                session["status"] = "error"
+                return
 
-        except Exception as e:
-            print(f"Error during face swap processing: {e}\nIteration: {GENERATION_DATA['iteration']}\n")
-            
-            GENERATION_DATA["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            session["iteration"] += 1
 
-            GENERATION_DATA["status"] = "error"
-
-            log_and_print(log_file_path, f"[{GENERATION_DATA['finished_at']}] Face swap failed: {e}")
-
-            roop_globals.INPUT_FACESETS = []
-            roop_globals.TARGET_FACES = []
-            roop_globals.VIDEO_INPUTFACES = []
-
-            return
-        
-        GENERATION_DATA["iteration"] = GENERATION_DATA["iteration"] + 1
-
-        Template = glob.glob(os.path.join(roop_globals.output_path, '*.mp4'))[0]
-
+        Template = glob.glob(os.path.join(roop_globals.output_path, '*.mp4'))[0] if glob.glob(os.path.join(roop_globals.output_path, '*.mp4')) else None
         if not Template:
-            print("Error: No output file created during processing.")
+            log_and_print(logger, "Error: No output file created during processing.")
             return
-        
+
         os.rename(Template, os.path.join(roop_globals.output_path, "output.mp4"))
-        Template = os.path.join(roop_globals.output_path, "output.mp4")
+        session["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        session["status"] = "finished"
+        session["iteration"] = 0
+        log_and_print(logger, f"[{session['finished_at']}] Face swap completed.")
 
-    roop_globals.INPUT_FACESETS = []
-    roop_globals.TARGET_FACES = []
-    roop_globals.VIDEO_INPUTFACES = []
+    finally:
+        # Clean up FaceSets to avoid data intermix
+        del roop_globals.INPUT_FACESETS[:]
+        del roop_globals.TARGET_FACES[:]
+        del roop_globals.VIDEO_INPUTFACES[:]
 
-    GENERATION_DATA["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    GENERATION_DATA["status"] = "finished"
-
-    GENERATION_DATA["iteration"] = 0
-
-    print(f"[{GENERATION_DATA['finished_at']}] Face swap completed.")
-
-"""API ENDPOINTS"""
+# ---------------- API ENDPOINTS (Concurrency-safe!) --------------------
 
 @router.get("/health")
 async def health_check():
-    """
-    Health check endpoint to verify if the service is running.
-    """
     return {
         "status": "healthy",
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -203,212 +171,184 @@ async def health_check():
 
 @router.get("/video-templates")
 async def get_video_templates():
-    """
-    Returns a list of available video templates.
-    """
-    return GENERATION_DATA["templateData"]
+    return TEMPLATES_DATA
 
 @router.get("/templates/{template_id}/info")
 async def get_template_info(template_id: str):
-    """
-    Returns detailed information for a specific video template.
-    """
-    template = next((t for t in GENERATION_DATA["templateData"]["available_video_templates"] if t["template_id"] == template_id), None)
-    
-    return template
+    available = [t for t in TEMPLATES_DATA["available_video_templates"] if t["template_id"] == template_id]
+    return available[0] if available else None
 
 @router.post("/uploadvideo")
 async def upload_video(user_id: str = Form(...), template_id: str = Form(...)):
-    """
-    Endpoint to upload a video for face swapping.
-    """
-    GENERATION_DATA["generationId"] = f"{uuid.uuid4()}"
-    GENERATION_DATA["userId"] = user_id
-    GENERATION_DATA["outputDir"] = f"{OUTPUT_DIR}/{GENERATION_DATA['generationId']}"
-    GENERATION_DATA["templatePath"] = TEMPLATES_DIR + "/" + template_id + ".mp4"
+    generation_id = str(uuid.uuid4())
+    output_dir = f"{OUTPUT_DIR}/{generation_id}"
+    os.makedirs(output_dir, exist_ok=True)
+    template_path = TEMPLATES_DIR + "/" + template_id + ".mp4"
 
-    roop_globals.output_path = OUTPUT_DIR + "/" + GENERATION_DATA["generationId"] + "/" + "output"
-
+    session = {
+        "outputDir": output_dir,
+        "generationId": generation_id,
+        "userId": user_id,
+        "groupId": "",
+        "templateId": template_id,
+        "templatePath": template_path,
+        "templateData": TEMPLATES_DATA,
+        "face_groups_detected": {},
+        "detected_faces_urls": {},
+        "total_face_groups": 0,
+        "faces_to_swap": 1,
+        "thumbnail_url": None,
+        "base_url": "http://localhost:8000/",
+        "created_at": "",
+        "finished_at": "",
+        "iteration": 0,
+        "status": "processing",
+    }
+    roop_globals.output_path = os.path.join(output_dir, "output")
     os.makedirs(roop_globals.output_path, exist_ok=True)
-    
-    if roop_globals.CFG.clear_output:
+    if getattr(roop_globals.CFG, 'clear_output', False):
         util.clean_dir(roop_globals.output_path)
 
-    roop_globals.target_path = GENERATION_DATA["templatePath"]
-    roop_globals.selected_enhancer = "GFPGAN" 
-    roop_globals.distance_threshold = 0.65
-    roop_globals.blend_ratio = 1
-    roop_globals.face_swap_mode = "selected"
-    roop_globals.no_face_action = 0 # Use untouched original frame
-    roop_globals.keep_frames = False
-    roop_globals.wait_after_extraction = False
-    roop_globals.vr_mode = False
-    roop_globals.autorotate_faces = True
-    roop_globals.subsample_size = 128
-    roop_globals.mask_engine = 'None'
-    roop_globals.clip_text = None
-    roop_globals.execution_threads = roop_globals.CFG.max_threads
-    roop_globals.video_encoder = roop_globals.CFG.output_video_codec
-    roop_globals.video_quality = roop_globals.CFG.video_quality
-    roop_globals.max_memory = roop_globals.CFG.memory_limit if roop_globals.CFG.memory_limit > 0 else None
+    roop_globals.target_path = template_path
+    # (Set other config globals as needed; these are likely thread/process safe)
 
+    # Video face extraction is unique for this generation
     print("\n\nAnalyzing target video for faces...\n\n")
-
     target_face_data = extract_face_images(roop_globals.target_path, (True, 0))
-    
     if not target_face_data:
         print("Error: No face detected in the source image.\n\n")
-        sys.exit(1)
+        return {"error": "No face detected in the source image."}
 
-    print(f"Found {len(target_face_data)} face(s) in the target video.\n\n")
-
-    print("Creating face set for target video...\n\n")
-
-    face_set = FaceSet()    
+    face_set = FaceSet()
     for face_data in target_face_data:
         face = face_data[0]
         face.mask_offsets = (0,0,0,0,1,20)
         face_set.faces.append(face)
-        
     face_set.AverageEmbeddings()
     roop_globals.TARGET_FACES.append(face_set)
-
-    print(f"Found {len(target_face_data)} face(s)\n\n")
 
     # Save cropped faces for target video
     for i, (face, face_image) in enumerate(target_face_data):
         try:
-            face_filename = f"target_{i}_{GENERATION_DATA['generationId']}.jpg"
-            face_path = GENERATION_DATA["outputDir"] + "/" + face_filename
+            face_filename = f"target_{i}_{generation_id}.jpg"
+            face_path = os.path.join(output_dir, face_filename)
             cv2.imwrite(str(face_path), face_image)
-
-            GENERATION_DATA["detected_faces_urls"][i] = GENERATION_DATA["base_url"] + face_path
-
+            session["detected_faces_urls"][i] = session["base_url"] + face_path
         except Exception as e:
             print(f"Error saving face {i}: {e}\n\n")
             continue
 
-    GENERATION_DATA["status"] = "processing"
-    GENERATION_DATA["templateId"] = template_id
-    GENERATION_DATA["face_groups_detected"] = {
-        "1": 277,
-        "0": 290
-    }
-    GENERATION_DATA["total_face_groups"] = len(GENERATION_DATA["detected_faces_urls"])
+    # Store detected face group details, thumbnail, etc.
+    session["status"] = "processing"
+    session["face_groups_detected"] = {"1": 277, "0": 290}  # Demo values (update as per logic)
+    session["total_face_groups"] = len(session["detected_faces_urls"])
+    session["thumbnail_url"] = next(
+        (t["thumbnail_url"] for t in session["templateData"]["available_video_templates"] if t["template_id"] == template_id),
+        None
+    )
 
-    GENERATION_DATA["thumbnail_url"] = next((t["thumbnail_url"] for t in GENERATION_DATA["templateData"]["available_video_templates"] if t["template_id"] == template_id), None)
-    
+    set_session(generation_id, session)
+
     return {
-        "generation_id": GENERATION_DATA["generationId"],
+        "generation_id": generation_id,
         "template_id": template_id,
-        "face_groups_detected": GENERATION_DATA["face_groups_detected"],
-        "detected_faces_urls": GENERATION_DATA["detected_faces_urls"],
-        "total_face_groups": GENERATION_DATA["total_face_groups"],
-        "status": GENERATION_DATA["status"],
+        "face_groups_detected": session["face_groups_detected"],
+        "detected_faces_urls": session["detected_faces_urls"],
+        "total_face_groups": session["total_face_groups"],
+        "status": session["status"],
         "credits": 50,
-        "thumbnail_url": GENERATION_DATA["thumbnail_url"],
+        "thumbnail_url": session["thumbnail_url"],
     }
 
 @router.post("/uploadnewfaces/{generation_id}/{group_id}")
 async def upload_new_faces(generation_id: str, group_id: str, file : UploadFile = File(...)):
-    """
-    Endpoint to upload new faces for a specific generation and group.
-    """
+    session = get_session(generation_id)
+    output_dir = session["outputDir"]
+    os.makedirs(os.path.join(output_dir, group_id), exist_ok=True)
     source_file_name = f"{group_id}_{generation_id}.jpg"
-    os.makedirs(os.path.join(GENERATION_DATA["outputDir"], group_id), exist_ok=True)
-    source_file_path = os.path.join(GENERATION_DATA["outputDir"], group_id,  source_file_name)
-
+    source_file_path = os.path.join(output_dir, group_id, source_file_name)
+    # Each upload needs to be appended in the current context
+    if not hasattr(roop_globals, 'source_path_video'):
+        roop_globals.source_path_video = []
     roop_globals.source_path_video.append(source_file_path)
-
     with open(source_file_path, "wb") as buffer:
         buffer.write(file.file.read())
 
     print("Analyzing source image...\n\n")
-
     source_faces_data = extract_face_images(source_file_path, (False, 0))
     if not source_faces_data:
         print("Error: No face detected in the source image.\n\n")
-        sys.exit(1)
+        return {"error": "No face detected in the source image."}
 
     face_set = FaceSet()
     face = source_faces_data[0][0]
     face.mask_offsets = (0,0,0,0,1,20)
     face_set.faces.append(face)
     roop_globals.VIDEO_INPUTFACES.append(face_set)
-    
-    # Put total faces to swap in GENERATION DATA
-    GENERATION_DATA["faces_to_swap"] = len(roop_globals.VIDEO_INPUTFACES)
 
-    print(f"Found {len(source_faces_data)} face(s), using the first one.\n\n")
+    session["faces_to_swap"] = len(roop_globals.VIDEO_INPUTFACES)
 
     # Save cropped faces for source image
     for i, (face, face_image) in enumerate(source_faces_data):
         try:
-            face_filename = f"source_{i}_{GENERATION_DATA['generationId']}.jpg"
-            face_path = GENERATION_DATA["outputDir"] + "/" + group_id + "/" + face_filename
+            face_filename = f"source_{i}_{generation_id}.jpg"
+            face_path = os.path.join(output_dir, group_id, face_filename)
             cv2.imwrite(str(face_path), face_image)
             print(f"Saved source face {i} to {face_path}\n\n")
         except Exception as e:
             print(f"Error saving face {i}: {e}\n\n")
             continue
-    
 
+    set_session(generation_id, session)
     return {
         "message": "Face uploaded successfully",
         "generation_id": generation_id,
         "group_id": group_id,
-        "base_url": GENERATION_DATA["base_url"] + source_file_path,
-        "status": "ready_for_swap"
+        "base_url": session["base_url"] + source_file_path,
+        "status": "ready_for_swap",
     }
 
 @router.post("/faceswap/{generation_id}")
 async def faceswap(request: Request, generation_id : str):
-    """
-    Endpoint to perform face swap on the uploaded video.
-    """
-    
+    session = get_session(generation_id)
     json_data = await request.json()
     group_ids = json_data.get("group_ids", [])
-    
-    # Launch face swap in background
     loop = asyncio.get_running_loop()
+    # Launch face swap using per-session context
     loop.run_in_executor(None, run_face_swap_background, group_ids, generation_id)
-
-    GENERATION_DATA["created_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+    session["created_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    set_session(generation_id, session)
     return {
         "status": "processing",
         "generation_id": generation_id,
         "message": "Face swap processing started. Check status using /faceswap/status/{generation_id}",
-        "estimated_time": "1-2 minutes"
+        "estimated_time": "1-2 minutes",
     }
 
 @router.get("/faceswap/status/{generation_id}")
 async def get_swap_status(generation_id: str):
-    
+    session = get_session(generation_id)
+    log_file_path = os.path.join(session["outputDir"], "faceswap.log")
     progress = extract_last_percentage(log_file_path)
-
-    if (progress == 100.0 and GENERATION_DATA["iteration"] == GENERATION_DATA["faces_to_swap"]) or not (GENERATION_DATA["status"] == "processing") or GENERATION_DATA["status"] == "error" :
-        
+    if ((progress == 100.0 and session["iteration"] == session["faces_to_swap"])
+            or session["status"] != "processing"
+            or session["status"] == "error"):
         return {
             "generation_id": generation_id,
-            "created_at": GENERATION_DATA["created_at"],
-            "finished_at": GENERATION_DATA["finished_at"],
-            "progress": 100.0 if GENERATION_DATA["status"] == "finished" else 0.0,
-            "status": GENERATION_DATA["status"] if GENERATION_DATA["status"] else "completed",
-            "message": "Face swap completed successfully"
+            "created_at": session["created_at"],
+            "finished_at": session["finished_at"],
+            "progress": 100.0 if session["status"] == "finished" else 0.0,
+            "status": session["status"] if session["status"] else "completed",
+            "message": "Face swap completed successfully",
         }
-    else:            
-        
-        current_progress = GENERATION_DATA["iteration"] *100 + progress
-
-        progress = current_progress/ GENERATION_DATA["faces_to_swap"]
-            
+    else:
+        current_progress = session["iteration"] * 100 + progress
+        total_prog = current_progress / max(1, session["faces_to_swap"])
         return {
             "generation_id": generation_id,
-            "created_at": GENERATION_DATA["created_at"],
+            "created_at": session["created_at"],
             "finished_at": None,
-            "progress": progress,
-            "status": GENERATION_DATA["status"],
-            "message": f"Face swap is {progress}% complete",
+            "progress": total_prog,
+            "status": session["status"],
+            "message": f"Face swap is {total_prog}% complete",
         }

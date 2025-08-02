@@ -8,9 +8,9 @@ from routers import faceswap, videoswap
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Before the application starts, initialize resources
-
+    delete_temp_directory()
+    
     yield
-
     # After the application stops, clean up resources
 
     delete_temp_directory()
