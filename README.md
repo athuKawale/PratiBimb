@@ -7,6 +7,30 @@ conda activate pratibimb
 sh build.sh
 ```
 
+# Setup for VM GCP
+1. Install GCloud CLI
+```bash
+ssh-keygen -t rsa -f ~/.ssh/<filename> -C yourmail@gmail.com
+```
+
+2. Put the generated public key in vm ssh keys
+
+```bash
+gcloud config set project <YOUR_VM_PROJECT_ID>
+gcloud compute config-ssh
+```
+
+3. Connect Your VS code to ssh.
+```bash
+bash anaconda_setup.sh
+
+conda create -n pratibimb python=3.11 -y
+
+conda activate pratibimb
+
+bash build_linux.sh
+```
+
 # Execution
 
 ```bash

@@ -1,5 +1,3 @@
-git clone --single-branch --branch jagrut https://github.com/athuKawale/PratiBimb.git
-cd PratiBimb
 mkdir models
 git clone https://huggingface.co/AthuKawaleLogituit/Faceswap
 rm -rf Faceswap/.git
