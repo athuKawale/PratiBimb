@@ -388,7 +388,7 @@ async def get_swap_status(generation_id: str):
     
     progress = extract_last_percentage(log_file_path)
 
-    if (progress == 100.0 and GENERATION_DATA["iteration"] == GENERATION_DATA["faces_to_swap"]) or not (GENERATION_DATA["status"] == "processing") or GENERATION_DATA["status"] == "error" :
+    if (progress == 100.0 and GENERATION_DATA["iteration"] == GENERATION_DATA["faces_to_swap"] and GENERATION_DATA["status"] != "processing") or GENERATION_DATA["status"] == "error" :
         
         return {
             "generation_id": generation_id,
