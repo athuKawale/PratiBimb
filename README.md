@@ -24,6 +24,8 @@ gcloud compute config-ssh
 ```bash
 bash nvidia_drivers.sh
 
+# Your system will reboot so wait for some time. then run following.
+
 bash nvidia_drivers2.sh
 
 bash anaconda_setup.sh

@@ -1,33 +1,29 @@
-# After reboot, verify driver installation:
-nvidia-smi
+# nvidia_drivers2.sh
+#— Install CUDA 12.0, cuDNN 9 (for CUDA 12), and NCCL 2.18 —#
 
-# Step 1: Install CUDA Toolkit (latest from NVIDIA's repo)
-sudo apt update
-sudo apt install -y cuda
+# 1. Verify driver is running post-boot
+nvidia-smi    # should still show Driver Version: 550
 
-# (Optional) Install specific CUDA version if required, e.g.:
-# sudo apt install -y cuda-toolkit-12-8
+# 2. Install CUDA 12.0 via NVIDIA runfile (no driver overwrite)
+CUDA_VER=12.0.1
+CUDA_RUNFILE=cuda_${CUDA_VER}_525.85.12_linux.run
+wget https://developer.download.nvidia.com/compute/cuda/${CUDA_VER}/local_installers/${CUDA_RUNFILE}
+sudo sh ${CUDA_RUNFILE} --silent --toolkit --override
 
-# Step 2: Add CUDA environment variables permanently
-echo 'export PATH=/usr/local/cuda/bin:$PATH' >> ~/.bashrc
-echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc
+# 3. Set environment variables
+echo 'export PATH=/usr/local/cuda-12.0/bin:$PATH' >> ~/.bashrc
+echo 'export LD_LIBRARY_PATH=/usr/local/cuda-12.0/lib64:$LD_LIBRARY_PATH' >> ~/.bashrc
 source ~/.bashrc
 
-# Verify CUDA compiler version
-nvcc --version
+# 4. Install cuDNN 9 for CUDA 12 (v9.10.2.21)
+sudo apt update
+sudo apt install -y libcudnn9-cuda-12 libcudnn9-dev-cuda-12 libcudnn9-headers-cuda-12
 
-# Step 3: Install cuDNN libraries (from NVIDIA's repo)
-sudo apt install -y libcudnn8 libcudnn8-dev
+# 5. Install NCCL 2.18 (matches your libnccl2 2.18.5)
+sudo apt install -y libnccl2=2.18.5-1-2 libnccl-dev=2.18.5-1-2
 
-# Step 4: Install NCCL libraries
-sudo apt install -y libnccl2 libnccl-dev
-
-# Step 5: Validate setup:
-nvidia-smi                       # Confirm GPU & driver
-nvcc --version                   # Confirm CUDA
-dpkg -l | grep nccl              # Confirm NCCL
-
-# (Optional) Validate with PyTorch in Python:
-# python -c "import torch; print(torch.cuda.is_available())"
-# python -c "import torch; print(torch.backends.cudnn.enabled)"
-# python -c "import torch; print(torch.distributed.is_nccl_available())"
+# 6. Validate setup
+nvidia-smi
+nvcc --version   # should report 12.0.x
+dpkg -l | grep cudnn
+dpkg -l | grep nccl
