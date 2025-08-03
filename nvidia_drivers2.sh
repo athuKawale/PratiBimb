@@ -27,3 +27,5 @@ nvidia-smi
 nvcc --version   # should report 12.0.x
 dpkg -l | grep cudnn
 dpkg -l | grep nccl
+
+ln -sf $HOME/anaconda3/envs/pratibimb/lib/python3.11/site-packages/nvidia/nvjitlink/lib/libnvJitLink.so.12 $HOME/anaconda3/envs/pratibimb/lib/python3.11/site-packages/nvidia/cusparse/lib/libnvJitLink.so.12
