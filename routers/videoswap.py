@@ -1,10 +1,7 @@
-# Add project root to path to allow relative imports
 import os
 import re
 import uuid
 import cv2
-import sys
-sys.path.append(os.getcwd())
 import glob
 import json
 import asyncio
@@ -236,7 +233,6 @@ async def upload_video(user_id: str = Form(...), template_id: str = Form(...)):
         util.clean_dir(roop_globals.output_path)
 
     roop_globals.target_path = GENERATION_DATA["templatePath"]
-    roop_globals.selected_enhancer = "GFPGAN" 
     roop_globals.distance_threshold = 0.65
     roop_globals.blend_ratio = 1
     roop_globals.face_swap_mode = "selected"
