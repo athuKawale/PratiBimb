@@ -65,8 +65,8 @@ if not logger.handlers:
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-def log_and_print(log_file_path: str, msg: str):
-    print(msg)
+def log_and_print(msg: str):
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
     logger.info(msg)
 
 def extract_last_percentage(log_file: str) -> float:
@@ -95,7 +95,7 @@ def run_face_swap_background(group_ids, generation_id):
 
 async def run_face_swap(group_ids: list, generation_id: str):
 
-    log_and_print(log_file_path, "Starting face swap process...")  
+    log_and_print("Starting face swap process...")  
 
     Template = GENERATION_DATA["templatePath"]
 
@@ -103,16 +103,17 @@ async def run_face_swap(group_ids: list, generation_id: str):
 
         roop_globals.INPUT_FACESETS = [roop_globals.VIDEO_INPUTFACES[i]]
 
-        # Move Embedding of faces to faces[0]  and setting faces embedding to None so that averageEmbeddings can be calculated.
-        roop_globals.TARGET_FACES[0].faces[0].embedding = roop_globals.TARGET_FACES[0].embedding
-        roop_globals.TARGET_FACES[0].embedding = None
+        if len(roop_globals.TARGET_FACES[0].faces) > 1 :
+            # Move Embedding of faces to faces[0]  and setting faces embedding to None so that averageEmbeddings can be calculated.
+            roop_globals.TARGET_FACES[0].faces[0].embedding = roop_globals.TARGET_FACES[0].embedding
+            roop_globals.TARGET_FACES[0].embedding = None
 
-        # getting i-th target face at front of list so that it is swapped
-        temp = roop_globals.TARGET_FACES[0].faces[0]
-        roop_globals.TARGET_FACES[0].faces[0] = roop_globals.TARGET_FACES[0].faces[i]
-        roop_globals.TARGET_FACES[0].faces[i] = temp
+            # getting i-th target face at front of list so that it is swapped
+            temp = roop_globals.TARGET_FACES[0].faces[0]
+            roop_globals.TARGET_FACES[0].faces[0] = roop_globals.TARGET_FACES[0].faces[i]
+            roop_globals.TARGET_FACES[0].faces[i] = temp
 
-        roop_globals.TARGET_FACES[0].AverageEmbeddings()
+            roop_globals.TARGET_FACES[0].AverageEmbeddings()
 
         # Prepare target file process entry
         list_files_process = []
@@ -155,7 +156,7 @@ async def run_face_swap(group_ids: list, generation_id: str):
 
             GENERATION_DATA["status"] = "error"
 
-            log_and_print(log_file_path, f"[{GENERATION_DATA['finished_at']}] Face swap failed: {e}")
+            log_and_print(f"Face swap failed: {e}")
 
             roop_globals.INPUT_FACESETS = []
             roop_globals.TARGET_FACES = []
@@ -269,8 +270,13 @@ async def upload_video(user_id: str = Form(...), template_id: str = Form(...)):
         face = face_data[0]
         face.mask_offsets = (0,0,0,0,1,20)
         face_set.faces.append(face)
+
+    if len(face_set.faces) > 1:
+         face_set.AverageEmbeddings()
+    
+    if len(face_set.faces) <= 1:
+        roop_globals.face_swap_mode = 'all_input'
         
-    face_set.AverageEmbeddings()
     roop_globals.TARGET_FACES.append(face_set)
 
     print(f"Found {len(target_face_data)} face(s)\n\n")
