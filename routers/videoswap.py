@@ -15,7 +15,7 @@ from roop.core import batch_process_regular
 from roop.face_util import extract_face_images
 from roop.capturer import get_video_frame_total
 from contextlib import redirect_stderr, redirect_stdout
-from fastapi import APIRouter, File, Form, Request, UploadFile
+from fastapi import APIRouter, File, Form, Request, UploadFile, HTTPException
 
 router = APIRouter(
     prefix="/videoswap",
@@ -254,8 +254,11 @@ async def upload_video(user_id: str = Form(...), template_id: str = Form(...)):
     target_face_data = extract_face_images(roop_globals.target_path, (True, 0))
     
     if not target_face_data:
-        print("Error: No face detected in the source image.\n\n")
-        sys.exit(1)
+        raise HTTPException(
+            status_code=422,
+            detail="No face detected in the image"
+        )
+
 
     print(f"Found {len(target_face_data)} face(s) in the target video.\n\n")
 
@@ -329,8 +332,10 @@ async def upload_new_faces(generation_id: str, group_id: str, file : UploadFile 
 
     source_faces_data = extract_face_images(source_file_path, (False, 0))
     if not source_faces_data:
-        print("Error: No face detected in the source image.\n\n")
-        sys.exit(1)
+        raise HTTPException(
+            status_code=422,
+            detail="No face detected in the image"
+        )
 
     face_set = FaceSet()
     face = source_faces_data[0][0]
