@@ -2,11 +2,13 @@ import os
 import uuid
 import json
 import requests
+from datetime import datetime
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from roop.globals import BASE_URL
 from roop import globals as roop_globals
 from roop.ProcessEntry import ProcessEntry
 from roop.core import batch_process_regular
+from typing import List, Dict, Any, Optional
 from scripts.upload_template_func import process_and_save_faces
 from scripts.upload_target_func import process_and_save_target_faces
 from fastapi import APIRouter, HTTPException, Form, File, UploadFile
@@ -21,13 +23,26 @@ router = APIRouter(
     tags=["faceswap"]
 )
 
-UPLOAD_TEMPLATES_DIR = "static/uploads"
+TEMPLATES_DIR = "static/Face-swap/Templates"
 OUTPUT_DIR = "static/Face-swap/results"
 
 GENERATION_DATA = {} 
 
 with open("static/templates.json", "r") as f:
     TEMPLATES_DATA = json.load(f)
+
+
+@router.get("/health")
+async def health() :
+
+    return {
+        "status": "healthy",
+        "service": "image-face-swap",
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "version": "1.0",
+        "active_workers": 1,
+        "cleanup_worker_active": True
+    }
 
 @router.get("/templates", response_model=Dict[str, Any])
 async def get_available_templates():
@@ -39,13 +54,15 @@ async def get_available_templates():
     
     templates = TEMPLATES_DATA.get("available_templates", [])
     
-    # Create a new list containing dictionaries with only the desired keys
     filtered_templates = []
     for template in templates:
         filtered_templates.append({
             "template_id": template.get("template_id"),
-            "template_url": template.get("template_url"),
-            "template_filename": template.get("template_filename")
+            "filename": template.get("filename"),
+            "signed_template_url": template.get("signed_template_url"),
+            "file_size": template.get("file_size"),
+            "last_modified": "2025-07-31T05:16:19.874000+00:00"
+
         })
     
     return {"available_templates": filtered_templates}
@@ -61,33 +78,77 @@ async def get_template_info(template_id: str):
     raise HTTPException(status_code=404, detail=f"Template with ID '{template_id}' not found.")
 
 @router.post("/upload_template")
-async def upload_template(template_id: str = Form(...), user_id: str = Form(...)):
+async def upload_template(
+    template_id: Optional[str] = Form(None),
+    user_id: str = Form(...),           
+    files: Optional[UploadFile] = File(None)
+):    
+
+    template_ids = []
+
+    if template_id is not None and files is not None :
+        raise HTTPException(
+            status_code=400,
+            detail="Cannot provide both template_id and files. Choose one option."
+        )
+
+    if template_id is None and files is None :
+        raise HTTPException(
+            status_code=400,
+            detail="Specify either template_id or files"
+        )
     
-    # Template download logic (unchanged)
-    for template in TEMPLATES_DATA.get("available_templates", []):
-        if template.get("template_id") == template_id:
-            img_url = template.get("template_url")
-            break
-    else:
-        raise HTTPException(status_code=404, detail=f"Template with ID '{template_id}' not found.")
-    
-    response = requests.get(img_url)
-    if response.status_code == 200:
-        output_dir = f"static/Face-swap/Templates/{template_id}"
-        os.makedirs(output_dir, exist_ok=True)
-        file_path = os.path.join(output_dir, f"{template_id}.jpg")
-        with open(file_path, 'wb') as f:
-            f.write(response.content)
-        print(f"Template image for {template_id} downloaded successfully.")
-    elif response.status_code == 404:
-        raise HTTPException(status_code=404, detail=f"Template image for '{template_id}' not found at the provided URL.")
-    else:
-        raise HTTPException(status_code=500, detail="Failed to download the template image.")
-    
+    if files is None :
+
+        # Template download
+        template_ids.append(template_id)
+
+        for template in TEMPLATES_DATA.get("available_templates", []):
+            if template.get("template_id") == template_id:
+                img_url = template.get("template_url")
+                break
+        else:
+            raise HTTPException(status_code=404, detail=f"Template with ID '{template_id}' not found.")
+        
+        response = requests.get(img_url)
+
+        if response.status_code == 200:
+
+            output_dir = f"{TEMPLATES_DIR}/{template_id}"
+
+            os.makedirs(output_dir, exist_ok=True)
+
+            file_path = os.path.join(output_dir, f"{template_id}.jpg")
+
+            with open(file_path, 'wb') as f:
+                f.write(response.content)
+
+            print(f"Template image for {template_id} downloaded successfully.")
+
+        elif response.status_code == 404:
+
+            raise HTTPException(status_code=404, detail=f"Template image for '{template_id}' not found at the provided URL.")
+        
+        else:
+
+            raise HTTPException(status_code=500, detail="Failed to download the template image.")
+       
+    else :
+
+        os.makedirs(TEMPLATES_DIR, exist_ok=True) 
+
+        file_path = os.path.join(TEMPLATES_DIR, files.filename)
+
+        template_ids.append(files.filename)
+
+        with open(file_path, "wb") as file_object:
+            file_object.write(await files.read())
+
+    roop_globals.target_path = file_path
+
     generation_id = str(uuid.uuid4())
     
-    roop_globals.target_path = file_path
-    print(file_path)
+
     # Process faces and get URLs
     masked_face_url, detected_face_urls = process_and_save_faces(
         source_path=file_path,  # Use file_path directly
@@ -96,28 +157,19 @@ async def upload_template(template_id: str = Form(...), user_id: str = Form(...)
         output_dir=OUTPUT_DIR
     )
     
-    # Handle cases where face processing fails
-    if masked_face_url is None:
-        masked_face_url = ""
-    if not detected_face_urls:
-        detected_face_urls = []
-        
-    
+    if len(detected_face_urls) == 0 :
+        raise HTTPException(
+            status_code=404,
+            detail="No face detected."
+        )
     
     GENERATION_DATA[generation_id] = {
-        "template_id": template_id,
+        "template_ids": template_ids,
         "template_path": file_path,
         "target_paths": [],
-        "template_face_urls": detected_face_urls # Store detected face URLs for later use
-    }
-    
-    return {
-        "message": "Template uploaded successfully",
-        "generation_id": generation_id,
-        "template_id": template_id,
-        "template_url": f"static/Face-swap/Templates/{template_id}/{template_id}.jpg",
+        "template_url": f"{BASE_URL}/{file_path}",
         "masked_face_url": masked_face_url,
-        "signed_masked_face_url": f"{masked_face_url}?dummy_signed_url" if masked_face_url else "",
+        "signed_masked_face_url": f"{masked_face_url}?dummy_signed_url",
         "detected_face_urls": detected_face_urls,
         "signed_detected_face_urls": [f"{url}?dummy_signed_url" for url in detected_face_urls],
         "template_face_indices": list(range(len(detected_face_urls))),
@@ -125,11 +177,27 @@ async def upload_template(template_id: str = Form(...), user_id: str = Form(...)
         "is_multi_face": len(detected_face_urls) > 1,
         "credits": 20,
         "status": "processing",
-        "transcoding": None
+        
+    }
+
+    return {
+        "message": "Template uploaded successfully",
+        "generation_id": generation_id,
+        "template_ids": GENERATION_DATA[generation_id]['template_ids'],
+        "template_url": GENERATION_DATA[generation_id]["template_url"],
+        "masked_face_url": GENERATION_DATA[generation_id]["masked_face_url"],
+        "signed_masked_face_url": GENERATION_DATA[generation_id]["signed_masked_face_url"],
+        "detected_face_urls": GENERATION_DATA[generation_id]["detected_face_urls"],
+        "signed_detected_face_urls": GENERATION_DATA[generation_id]["signed_detected_face_urls"],
+        "template_face_indices": GENERATION_DATA[generation_id]["template_face_indices"],
+        "template_face_count": GENERATION_DATA[generation_id]["template_face_count"],
+        "is_multi_face": GENERATION_DATA[generation_id]["is_multi_face"],
+        "credits": 20,
+        "status": GENERATION_DATA[generation_id]["status"],
     }
 
 @router.post("/upload_targets")
-async def upload_targets(file: UploadFile = File(...), user_id: str = Form(...), generation_id: str = Form(...)):
+async def upload_targets(files: List[UploadFile] = File(...), user_id: str = Form(...), generation_id: str = Form(...), file_url : str = Form(...)):
     
     # Check if the generation_id is valid by checking if the directory exists
     generation_dir = os.path.join(OUTPUT_DIR, generation_id)
@@ -143,8 +211,9 @@ async def upload_targets(file: UploadFile = File(...), user_id: str = Form(...),
             }
         )
 
-    target_urls, signed_target_urls, target_face_urls, signed_target_face_urls, target_face_indices = process_and_save_target_faces(
-        file=file,
+    target_urls, signed_target_urls, target_face_urls, signed_target_face_urls, target_face_indices, target_paths = process_and_save_target_faces(
+        files=files,
+        file_url=file_url,
         user_id=user_id,
         generation_id=generation_id,
         output_dir=OUTPUT_DIR
@@ -152,7 +221,13 @@ async def upload_targets(file: UploadFile = File(...), user_id: str = Form(...),
 
     # Store target image paths in GENERATION_DATA
     if generation_id in GENERATION_DATA:
-        GENERATION_DATA[generation_id]["target_paths"].extend([os.path.join(generation_dir, os.path.basename(url.lstrip("/"))) for url in target_urls])
+        GENERATION_DATA[generation_id]["target_paths"] = target_paths
+        GENERATION_DATA[generation_id]["target_urls"] = target_urls
+        GENERATION_DATA[generation_id]["signed_target_urls"] = signed_target_urls
+        GENERATION_DATA[generation_id]["target_face_urls"] = target_face_urls
+        GENERATION_DATA[generation_id]["signed_target_face_urls"] = signed_target_face_urls
+        GENERATION_DATA[generation_id]["target_face_indices"] = target_face_indices
+        GENERATION_DATA[generation_id]["target_face_count"] = len(target_face_urls)
 
     return {
         "message": "Target images uploaded successfully",
@@ -163,7 +238,8 @@ async def upload_targets(file: UploadFile = File(...), user_id: str = Form(...),
         "signed_target_face_urls": signed_target_face_urls,
         "target_face_indices": target_face_indices,
         "target_face_count": len(target_face_urls),
-        "status": "processing"
+        "status": GENERATION_DATA[generation_id]["status"],
+        "additional_info" : None
     }
 
 @router.post("/swap_face")
@@ -215,11 +291,6 @@ async def swap_face(request: SwapFaceRequest):
     list_files_process = [ProcessEntry(roop_globals.target_path, 0, 1, 0)]
     print(f"Target set to: {roop_globals.target_path}")
     
-    # Set some more required globals
-    roop_globals.execution_threads = roop_globals.CFG.max_threads
-    roop_globals.max_memory = roop_globals.CFG.memory_limit if roop_globals.CFG.memory_limit > 0 else None
-
-    
     try:
         batch_process_regular(
             swap_model=roop_globals.face_swapper_model,
@@ -240,7 +311,7 @@ async def swap_face(request: SwapFaceRequest):
     swapped_image_url = f"/{OUTPUT_DIR}/{generation_id}/{output_filename}"
     signed_swapped_image_url = f"{swapped_image_url}?dummy_signed_url"
     
-    roop_globals.INPUT_FACESETS = []  # Clear the input facesets after processing
+    roop_globals.INPUT_FACESETS = []  
     roop_globals.TARGET_FACES = []
     
     return {

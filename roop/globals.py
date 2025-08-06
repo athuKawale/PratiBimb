@@ -24,10 +24,10 @@ target_face_index = 0
 video_encoder = None
 video_quality = None
 max_memory = None
-execution_providers: List[str] = ['CUDAExecutionProvider']
+execution_providers: List[str] = ['CPUExecutionProvider']
 force_fp32: bool = False
 execution_queue_count: int = 1
-execution_threads = None
+execution_threads = 4
 headless = None
 log_level = 'error'
 selected_enhancer = 'GPEN' # 'GFPGAN', 'Codeformer', None, 'DMDNet', 'Restoreformer++', 'GPEN'
@@ -68,4 +68,4 @@ CFG.use_os_temp_folder = False
 CFG.output_show_video = True
 CFG.launch_browser = True
 
-
+BASE_URL = "http://localhost:8002"
