@@ -395,16 +395,28 @@ async def get_swap_status(generation_id: str):
     
     progress = extract_last_percentage(log_file_path)
 
-    if (progress == 100.0 and GENERATION_DATA["iteration"] == GENERATION_DATA["faces_to_swap"] and GENERATION_DATA["status"] != "processing") or GENERATION_DATA["status"] == "error" :
+    if GENERATION_DATA["status"] == "finished" :
         
         return {
             "generation_id": generation_id,
             "created_at": GENERATION_DATA["created_at"],
             "finished_at": GENERATION_DATA["finished_at"],
-            "progress": 100.0 if GENERATION_DATA["status"] == "finished" else 0.0,
-            "status": GENERATION_DATA["status"] if GENERATION_DATA["status"] else "completed",
+            "progress": 100.0,
+            "status": GENERATION_DATA["status"],
             "message": "Face swap completed successfully"
         }
+    
+    elif GENERATION_DATA["status"] == "error" :
+
+        return {
+            "generation_id": generation_id,
+            "created_at": GENERATION_DATA["created_at"],
+            "finished_at": GENERATION_DATA["finished_at"],
+            "progress": 0.0,
+            "status": GENERATION_DATA["status"],
+            "message": "Error While Swapping Faces."
+        }
+
     else:            
         
         current_progress = GENERATION_DATA["iteration"] *100 + progress
@@ -414,7 +426,7 @@ async def get_swap_status(generation_id: str):
         return {
             "generation_id": generation_id,
             "created_at": GENERATION_DATA["created_at"],
-            "finished_at": None,
+            "finished_at": "Currently progressing",
             "progress": progress,
             "status": GENERATION_DATA["status"],
             "message": f"Face swap is {progress}% complete",
