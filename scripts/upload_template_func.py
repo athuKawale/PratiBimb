@@ -6,6 +6,7 @@ from roop.face_util import extract_face_images
 from roop import globals as roop_globals
 
 def process_and_save_faces(source_path, generation_id, template_id, output_dir):
+    
     print("Analyzing source image...")
     print(source_path)
     

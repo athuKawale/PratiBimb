@@ -14,7 +14,7 @@ mask_engine : str = 'None'
 clip_text = None
 cuda_device_id = 0
 frame_processors: List[str] = []
-keep_frames = None
+keep_frames = False
 autorotate_faces = True
 vr_mode = None
 skip_audio = None
@@ -24,21 +24,19 @@ target_face_index = 0
 video_encoder = None
 video_quality = None
 max_memory = None
-execution_providers: List[str] = ['CPUExecutionProvider']
+execution_providers: List[str] = ['CUDAExecutionProvider']
 force_fp32: bool = False
 execution_queue_count: int = 1
-execution_threads = None
+execution_threads = 4
 headless = None
 log_level = 'error'
-selected_enhancer = None # 'GFPGAN', 'Codeformer', None, 'DMDNet', 'Restoreformer++', 'GPEN'
+selected_enhancer = 'GPEN' # 'GFPGAN', 'Codeformer', None, 'DMDNet', 'Restoreformer++', 'GPEN'
 subsample_size = 128
 face_swap_mode = 'all_input' # 'first', 'all_input', 'all_female', 'all_male', 'all_random', 'all', 'selected'
 face_swapper_model: str = 'InSwapper 128' # ['InSwapper 128', 'ReSwapper 128', 'ReSwapper 256']
 blend_ratio = 1
 distance_threshold: float = 0.80
 default_det_size = True
-target_face_index = 0 # for video face swap, index of the face in the first frame to track and swap
-
 no_face_action = 0
 
 processing = False
@@ -48,6 +46,7 @@ g_desired_face_analysis = None
 
 INPUT_FACESETS = []
 TARGET_FACES = []
+VIDEO_INPUTFACES : List = []
 
 # Hard-coded Settings instance
 CFG: Settings = Settings.__new__(Settings)
@@ -69,4 +68,4 @@ CFG.use_os_temp_folder = False
 CFG.output_show_video = True
 CFG.launch_browser = True
 
-
+BASE_URL = "http://localhost:8002"
