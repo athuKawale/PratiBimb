@@ -87,10 +87,10 @@ def extract_last_percentage(log_file: str) -> float:
 
 """Run face swap in background using asyncio"""
 
-def run_face_swap_background(group_ids, generation_id):
-    asyncio.run(run_face_swap(group_ids, generation_id))
+def run_video_swap_background(group_ids, generation_id):
+    asyncio.run(run_video_swap(group_ids, generation_id))
 
-async def run_face_swap(group_ids: list, generation_id: str):
+async def run_video_swap(group_ids: list, generation_id: str):
 
     log_and_print("Starting face swap process...")  
 
@@ -379,7 +379,7 @@ async def faceswap(request: Request, generation_id : str):
     
     # Launch face swap in background
     loop = asyncio.get_running_loop()
-    loop.run_in_executor(None, run_face_swap_background, group_ids, generation_id)
+    loop.run_in_executor(None, run_video_swap_background, group_ids, generation_id)
 
     GENERATION_DATA["created_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 

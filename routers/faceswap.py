@@ -1,7 +1,13 @@
+import glob
 import os
+import re
 import uuid
 import json
+import asyncio
+import logging
 import requests
+from PIL import Image
+from metadata import version
 from datetime import datetime
 from pydantic import BaseModel
 from roop.globals import BASE_URL
@@ -9,9 +15,12 @@ from roop import globals as roop_globals
 from roop.ProcessEntry import ProcessEntry
 from roop.core import batch_process_regular
 from typing import List, Dict, Any, Optional
+from contextlib import redirect_stderr, redirect_stdout
 from scripts.upload_template_func import process_and_save_faces
 from scripts.upload_target_func import process_and_save_target_faces
 from fastapi import APIRouter, HTTPException, Form, File, UploadFile
+
+"""Globals"""
 
 class SwapFaceRequest(BaseModel):
     generation_id: str
@@ -23,14 +32,155 @@ router = APIRouter(
     tags=["faceswap"]
 )
 
-TEMPLATES_DIR = "static/Face-swap/Templates"
 OUTPUT_DIR = "static/Face-swap/results"
+TEMPLATES_DIR = "static/Face-swap/Templates"
 
 GENERATION_DATA = {} 
 
 with open("static/templates.json", "r") as f:
     TEMPLATES_DATA = json.load(f)
 
+"""Setup logging for face swap operations"""
+
+log_file_path = os.path.join(OUTPUT_DIR, "faceswap.log")
+logger = logging.getLogger("faceswap")
+logger.setLevel(logging.INFO)
+# Avoid duplicate handlers if re-called
+if not logger.handlers:
+    file_handler = logging.FileHandler(log_file_path, mode='w')
+    formatter = logging.Formatter('%(asctime)s - %(message)s')
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+
+def log_and_print(msg: str):
+    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
+    logger.info(msg)
+
+def extract_last_percentage(log_file: str) -> float:
+    if not os.path.exists(log_file):
+        print("file not found:", log_file)
+        return 0.0
+
+    with open(log_file, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    percent = 0.0
+    pattern = re.compile(r'Processing:\s+(\d{1,3})%')
+
+    for line in reversed(lines):
+        match = pattern.search(line)
+        if match:
+            percent = float(match.group(1))
+            break
+
+    return percent
+
+
+"""Run face swap in background using asyncio"""
+
+def run_face_swap_background(request):
+    asyncio.run(run_face_swap(request))
+
+async def run_face_swap(request : SwapFaceRequest):
+
+    log_and_print("Starting face swap process...")  
+    
+    generation_id = request.generation_id
+    roop_globals.source_indices = request.source_indices
+    roop_globals.target_indices = request.target_indices
+    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
+    
+    generation_data = GENERATION_DATA.get(generation_id)
+
+    if not generation_data:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "status": 400,
+                "error": "Bad Request",
+                "message": "Invalid generation_id. Please upload template and target images first."
+            }
+        )
+    
+    # Set roop_globals for face swapping
+    roop_globals.target_path = generation_data["template_path"]
+
+    if not generation_data["target_paths"]:
+        raise HTTPException(status_code=500, detail="No target images found for the given generation_id.")
+    
+    # Select the target image based on the first target_index provided
+    target_image_path = generation_data["target_paths"][0]
+    roop_globals.source_path = target_image_path
+
+    roop_globals.output_path = os.path.join(generation_dir, "swapped")
+
+    # Setting Indexes 
+    
+    temp_faceset = []
+    for i in range(len(roop_globals.TARGET_FACES)):
+        if i not in roop_globals.source_indices:
+            temp_faceset.append(roop_globals.TARGET_FACES[i])
+        else :
+            temp_faceset.append(roop_globals.INPUT_FACESETS[roop_globals.target_indices[roop_globals.source_indices.index(i)]])
+
+    roop_globals.INPUT_FACESETS = temp_faceset
+
+    # Perform face swap
+    
+    list_files_process = [ProcessEntry(roop_globals.target_path, 0, 1, 0)]
+    print(f"Target set to: {roop_globals.target_path}")
+
+    #This clears the log file
+    with open(log_file_path, 'w'):
+        pass
+
+    try :
+
+        with open(log_file_path, 'a') as f:
+            with redirect_stdout(f), redirect_stderr(f):
+                batch_process_regular(
+                    swap_model=roop_globals.face_swapper_model,
+                    output_method="File",
+                    files=list_files_process,
+                    masking_engine=roop_globals.mask_engine,
+                    new_clip_text=roop_globals.clip_text,
+                    use_new_method=True,
+                    imagemask=None,
+                    restore_original_mouth=False,
+                    num_swap_steps=1,
+                    progress=None,
+                    selected_index=0
+                )
+
+    except Exception as e:
+
+        GENERATION_DATA[generation_id]["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        GENERATION_DATA[generation_id]["status"] = "error"
+        GENERATION_DATA[generation_id]["details"] = f"Faceswap Failed : \n{e}"
+
+        log_and_print(f"Face swap failed: {e}")
+
+        roop_globals.INPUT_FACESETS = []
+        roop_globals.TARGET_FACES = []
+
+        return 
+    
+    file = glob.glob(os.path.join(roop_globals.output_path, '*.png'))[0]
+    file_url = f"{BASE_URL}/{file}"
+    signed_swap_url = f"{file_url}?dummy_signed_url"
+    
+    roop_globals.INPUT_FACESETS = []
+    roop_globals.TARGET_FACES = []
+
+    GENERATION_DATA[generation_id]["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    GENERATION_DATA[generation_id]["status"] = "finished"
+    GENERATION_DATA[generation_id]["file_url"] = file_url
+    GENERATION_DATA[generation_id]["signed_swap_url"] = signed_swap_url
+
+    print(f"[{GENERATION_DATA[generation_id]['finished_at']}] Face swap completed.")
+
+
+"""API ENDPOINTS"""
 
 @router.get("/health")
 async def health() :
@@ -39,7 +189,7 @@ async def health() :
         "status": "healthy",
         "service": "image-face-swap",
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "version": "1.0",
+        "version": version,
         "active_workers": 1,
         "cleanup_worker_active": True
     }
@@ -114,11 +264,9 @@ async def upload_template(
 
         if response.status_code == 200:
 
-            output_dir = f"{TEMPLATES_DIR}/{template_id}"
+            os.makedirs(TEMPLATES_DIR, exist_ok=True)
 
-            os.makedirs(output_dir, exist_ok=True)
-
-            file_path = os.path.join(output_dir, f"{template_id}.jpg")
+            file_path = os.path.join(TEMPLATES_DIR, f"{template_id}.jpg")
 
             with open(file_path, 'wb') as f:
                 f.write(response.content)
@@ -136,8 +284,8 @@ async def upload_template(
     else :
 
         os.makedirs(TEMPLATES_DIR, exist_ok=True) 
-
-        file_path = os.path.join(TEMPLATES_DIR, files.filename)
+        
+        file_path = os.path.join(TEMPLATES_DIR, str(files.filename))
 
         template_ids.append(files.filename)
 
@@ -147,11 +295,10 @@ async def upload_template(
     roop_globals.target_path = file_path
 
     generation_id = str(uuid.uuid4())
-    
 
     # Process faces and get URLs
     masked_face_url, detected_face_urls = process_and_save_faces(
-        source_path=file_path,  # Use file_path directly
+        source_path=file_path, 
         generation_id=generation_id,
         template_id=template_id,
         output_dir=OUTPUT_DIR
@@ -180,6 +327,22 @@ async def upload_template(
         
     }
 
+    # Find Image dimensions and orientations 
+    with Image.open(file_path) as img:
+        width, height = img.size
+        if width > height:
+            orientation = "landscape"
+        elif height > width:
+            orientation = "portrait"
+        else:
+            orientation = "square"
+        
+        GENERATION_DATA[generation_id]["result_image_dimensions"] = {
+            "width": width,
+            "height": height,
+            "orientation": orientation
+        }
+
     return {
         "message": "Template uploaded successfully",
         "generation_id": generation_id,
@@ -199,6 +362,9 @@ async def upload_template(
 @router.post("/upload_targets")
 async def upload_targets(files: List[UploadFile] = File(...), user_id: str = Form(...), generation_id: str = Form(...), file_url : str = Form(...)):
     
+    if GENERATION_DATA[generation_id]["status"] == "error" or GENERATION_DATA[generation_id]["status"] == "finished":
+        raise HTTPException(status_code=500, detail="Already Processed for the given ID.")
+
     # Check if the generation_id is valid by checking if the directory exists
     generation_dir = os.path.join(OUTPUT_DIR, generation_id)
     if not os.path.exists(generation_dir):
@@ -245,79 +411,70 @@ async def upload_targets(files: List[UploadFile] = File(...), user_id: str = For
 @router.post("/swap_face")
 async def swap_face(request: SwapFaceRequest):
     
-    generation_id = request.generation_id
-    roop_globals.source_indices = request.source_indices
-    roop_globals.target_indices = request.target_indices
-    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
+    if GENERATION_DATA[request.generation_id]["status"] == "error" or GENERATION_DATA[request.generation_id]["status"] == "finished":
+        raise HTTPException(status_code=500, detail="Already Processed for the given ID.")
     
-    generation_data = GENERATION_DATA.get(generation_id)
-    
-    if not generation_data:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "status": 400,
-                "error": "Bad Request",
-                "message": "Invalid generation_id. Please upload template and target images first."
-            }
-        )
+    # Launch face swap in background
+    loop = asyncio.get_running_loop()
+    loop.run_in_executor(None, run_face_swap_background, request)
 
-    # Set roop_globals for face swapping
-    roop_globals.target_path = generation_data["template_path"]
-
-    if not generation_data["target_paths"]:
-        raise HTTPException(status_code=500, detail="No target images found for the given generation_id.")
-    
-    # Select the target image based on the first target_index provided
-    target_image_path = generation_data["target_paths"][0]
-    roop_globals.source_path = target_image_path
-    
-    output_filename = f"swapped_{generation_id}.jpg"
-    roop_globals.output_path = os.path.join(generation_dir, output_filename)
-
-    # Setting Indexes 
-    
-    temp_faceset = []
-    for i in range(len(roop_globals.TARGET_FACES)):
-        if i not in roop_globals.source_indices:
-            temp_faceset.append(roop_globals.TARGET_FACES[i])
-        else :
-            temp_faceset.append(roop_globals.INPUT_FACESETS[roop_globals.target_indices[roop_globals.source_indices.index(i)]])
-
-    roop_globals.INPUT_FACESETS = temp_faceset
-
-    # Perform face swap
-    
-    list_files_process = [ProcessEntry(roop_globals.target_path, 0, 1, 0)]
-    print(f"Target set to: {roop_globals.target_path}")
-    
-    try:
-        batch_process_regular(
-            swap_model=roop_globals.face_swapper_model,
-            output_method="File",
-            files=list_files_process,
-            masking_engine=None,
-            new_clip_text=None,
-            use_new_method=True,
-            imagemask=None,
-            restore_original_mouth=False,
-            num_swap_steps=1,
-            progress=None,
-            selected_index=0
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Face swap failed: {str(e)}")
-
-    swapped_image_url = f"/{OUTPUT_DIR}/{generation_id}/{output_filename}"
-    signed_swapped_image_url = f"{swapped_image_url}?dummy_signed_url"
-    
-    roop_globals.INPUT_FACESETS = []  
-    roop_globals.TARGET_FACES = []
+    GENERATION_DATA[request.generation_id]["created_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     
     return {
-        "message": "Face swap completed successfully",
-        "generation_id": generation_id,
-        "swapped_image_url": swapped_image_url,
-        "signed_swapped_image_url": signed_swapped_image_url,
-        "status": "completed"
+        "message": "Face swap request accepted and is being processed",
+        "generation_id": request.generation_id,
+        "status": "processing",
+        "status_url": f"{BASE_URL}/faceswap/status/{request.generation_id}"
     }
+
+@router.get("/faceswap/status/{generation_id}")
+async def get_swap_status(generation_id: str):
+    
+    if generation_id not in GENERATION_DATA :
+        raise HTTPException(status_code=404, detail="Invalid Generation ID")
+    
+    progress = extract_last_percentage(log_file_path)
+
+    if GENERATION_DATA[generation_id]["status"] == "finished" :
+        
+        return {
+            "generation_id": generation_id,
+            "progress": 100,
+            "status": "completed",
+            "message": "Face swap completed successfully",
+            "signed_swap_url": GENERATION_DATA[generation_id]["signed_swap_url"],
+            "file_url": GENERATION_DATA[generation_id]["file_url"],
+            "error": None,
+            "result_image_dimensions":GENERATION_DATA[generation_id]["result_image_dimensions"],
+            "content_id": "65c7803c-ccd2-4f8f-8202-6e5fa0eb2281",
+            "ai_tool_id": "13bc568d-bd0f-4d2a-bd97-fe88c6d47689"
+        }
+    
+    elif GENERATION_DATA[generation_id]["status"] == "error" :
+
+        return {
+            "generation_id": generation_id,
+            "progress": None,
+            "status": "Failed",
+            "message": "Face swap failed",
+            "signed_swap_url": None,
+            "file_url": None,
+            "error": GENERATION_DATA[generation_id]["details"],
+            "result_image_dimensions":GENERATION_DATA[generation_id]["result_image_dimensions"],
+            "content_id": "65c7803c-ccd2-4f8f-8202-6e5fa0eb2281",
+            "ai_tool_id": "13bc568d-bd0f-4d2a-bd97-fe88c6d47689"
+        }
+
+    else:                    
+        return {
+            "generation_id": generation_id,
+            "progress": progress,
+            "status": "processing",
+            "message": "Processing face swap...",
+            "signed_swap_url": None,
+            "file_url": "null",
+            "error": None,
+            "result_image_dimensions": None,
+            "content_id": None,
+            "ai_tool_id": None
+        }

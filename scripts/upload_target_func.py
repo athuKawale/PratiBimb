@@ -9,6 +9,7 @@ from roop.FaceSet import FaceSet
 from roop.globals import BASE_URL
 from roop.face_util import extract_face_images
 from roop import globals as roop_globals
+
 def process_and_save_target_faces(files: List[UploadFile], file_url : str, user_id: str, generation_id: str, output_dir: str):
     target_urls = []
     signed_target_urls = []
@@ -26,7 +27,7 @@ def process_and_save_target_faces(files: List[UploadFile], file_url : str, user_
 
             filename = str(file.filename)
 
-            target_filename = f"target_{filename}_{generation_id}_{user_id}.jpg"
+            target_filename = f"target_{generation_id}_{user_id}_{filename}"
 
             target_path = f"{results_dir}/{target_filename}"
 
@@ -42,7 +43,9 @@ def process_and_save_target_faces(files: List[UploadFile], file_url : str, user_
         filename = str(Path(urlparse(file_url).path).name)
 
         target_filename = f"target_{generation_id}_{user_id}_{filename}"
+
         target_path = f"{results_dir}/{target_filename}"
+        
         target_paths.append(target_path)
 
         if response.status_code == 200:

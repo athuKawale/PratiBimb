@@ -11,7 +11,7 @@ target_folder_path = None
 startup_args = None
 
 mask_engine : str = 'None' 
-clip_text = None
+clip_text : str = 'None'
 cuda_device_id = 0
 frame_processors: List[str] = []
 keep_frames = False
