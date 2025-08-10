@@ -16,12 +16,21 @@ def process_and_save_faces(source_path, generation_id, template_id, output_dir):
         print("Error: No face detected in the source image.")
         return None, []
     
+    face_set = FaceSet()
     for face_data in source_faces_data:
-        face_set = FaceSet()
         face = face_data[0]
         face.mask_offsets = (0,0,0,0,1,20) # Default mask offsets
         face_set.faces.append(face)
-        roop_globals.TARGET_FACES.append(face_set)
+        
+    if len(face_set.faces) > 1:
+         face_set.AverageEmbeddings()
+    
+    if len(face_set.faces) <= 1:
+        roop_globals.face_swap_mode = 'all_input'
+    else :
+        roop_globals.face_swap_mode = 'selected'
+        
+    roop_globals.TARGET_FACES.append(face_set)
 
     # Create output directories
     results_dir = Path(output_dir) / str(generation_id)

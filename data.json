@@ -181,6 +181,573 @@
             "finished_at": "2025-08-10 13:55:08",
             "file_url": "http://localhost:8002/static/Face-swap/results/d242fbea-de2a-4ba0-a150-98591ab3b987/swapped/1_13-55-03.png",
             "signed_swap_url": "http://localhost:8002/static/Face-swap/results/d242fbea-de2a-4ba0-a150-98591ab3b987/swapped/1_13-55-03.png?dummy_signed_url"
+        },
+        "c034c6e2-e987-4986-a2c8-2ef88b033bae": {
+            "user_id": "1",
+            "template_ids": [
+                "1"
+            ],
+            "template_path": "static/Face-swap/Templates/1.jpg",
+            "target_paths": [
+                "static/Face-swap/results/c034c6e2-e987-4986-a2c8-2ef88b033bae/targets/target_c034c6e2-e987-4986-a2c8-2ef88b033bae_1_t1.jpg"
+            ],
+            "template_url": "http://localhost:8002/static/Face-swap/Templates/1.jpg",
+            "masked_face_url": "http://localhost:8002/static/Face-swap/results/c034c6e2-e987-4986-a2c8-2ef88b033bae/template_masked_c034c6e2-e987-4986-a2c8-2ef88b033bae_1.jpg",
+            "signed_masked_face_url": "http://localhost:8002/static/Face-swap/results/c034c6e2-e987-4986-a2c8-2ef88b033bae/template_masked_c034c6e2-e987-4986-a2c8-2ef88b033bae_1.jpg?dummy_signed_url",
+            "detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/c034c6e2-e987-4986-a2c8-2ef88b033bae/template_face_0_c034c6e2-e987-4986-a2c8-2ef88b033bae_1.jpg"
+            ],
+            "signed_detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/c034c6e2-e987-4986-a2c8-2ef88b033bae/template_face_0_c034c6e2-e987-4986-a2c8-2ef88b033bae_1.jpg?dummy_signed_url"
+            ],
+            "template_face_indices": [
+                0
+            ],
+            "template_face_count": 1,
+            "is_multi_face": false,
+            "credits": 20,
+            "status": "finished",
+            "iterations": 1,
+            "result_image_dimensions": {
+                "width": 380,
+                "height": 450,
+                "orientation": "portrait"
+            },
+            "faces_to_swap": 1,
+            "target_urls": [
+                "http://localhost:8002/static/Face-swap/results/c034c6e2-e987-4986-a2c8-2ef88b033bae/targets/target_c034c6e2-e987-4986-a2c8-2ef88b033bae_1_t1.jpg"
+            ],
+            "signed_target_urls": [
+                "http://localhost:8002/static/Face-swap/results/c034c6e2-e987-4986-a2c8-2ef88b033bae/targets/target_c034c6e2-e987-4986-a2c8-2ef88b033bae_1_t1.jpg?dummy_signed_url"
+            ],
+            "target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/c034c6e2-e987-4986-a2c8-2ef88b033bae/targets/target_face_0_c034c6e2-e987-4986-a2c8-2ef88b033bae_1.jpg"
+            ],
+            "signed_target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/c034c6e2-e987-4986-a2c8-2ef88b033bae/targets/target_face_0_c034c6e2-e987-4986-a2c8-2ef88b033bae_1.jpg?dummy_signed_url"
+            ],
+            "target_face_indices": [
+                0
+            ],
+            "target_face_count": 1,
+            "created_at": "2025-08-10 18:48:41",
+            "finished_at": "2025-08-10 18:48:48",
+            "file_url": "http://localhost:8002/static/Face-swap/results/c034c6e2-e987-4986-a2c8-2ef88b033bae/swapped/output.png",
+            "signed_swap_url": "http://localhost:8002/static/Face-swap/results/c034c6e2-e987-4986-a2c8-2ef88b033bae/swapped/output.png?dummy_signed_url"
+        },
+        "6bede1e1-e725-4561-b5bf-274c7fb2e904": {
+            "user_id": "1",
+            "template_ids": [
+                "2"
+            ],
+            "template_path": "static/Face-swap/Templates/2.jpg",
+            "target_paths": [
+                "static/Face-swap/results/6bede1e1-e725-4561-b5bf-274c7fb2e904/targets/target_6bede1e1-e725-4561-b5bf-274c7fb2e904_1_t1.jpg"
+            ],
+            "template_url": "http://localhost:8002/static/Face-swap/Templates/2.jpg",
+            "masked_face_url": "http://localhost:8002/static/Face-swap/results/6bede1e1-e725-4561-b5bf-274c7fb2e904/template_masked_6bede1e1-e725-4561-b5bf-274c7fb2e904_2.jpg",
+            "signed_masked_face_url": "http://localhost:8002/static/Face-swap/results/6bede1e1-e725-4561-b5bf-274c7fb2e904/template_masked_6bede1e1-e725-4561-b5bf-274c7fb2e904_2.jpg?dummy_signed_url",
+            "detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/6bede1e1-e725-4561-b5bf-274c7fb2e904/template_face_0_6bede1e1-e725-4561-b5bf-274c7fb2e904_2.jpg"
+            ],
+            "signed_detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/6bede1e1-e725-4561-b5bf-274c7fb2e904/template_face_0_6bede1e1-e725-4561-b5bf-274c7fb2e904_2.jpg?dummy_signed_url"
+            ],
+            "template_face_indices": [
+                0
+            ],
+            "template_face_count": 1,
+            "is_multi_face": false,
+            "credits": 20,
+            "status": "finished",
+            "iterations": 1,
+            "result_image_dimensions": {
+                "width": 380,
+                "height": 450,
+                "orientation": "portrait"
+            },
+            "faces_to_swap": 1,
+            "target_urls": [
+                "http://localhost:8002/static/Face-swap/results/6bede1e1-e725-4561-b5bf-274c7fb2e904/targets/target_6bede1e1-e725-4561-b5bf-274c7fb2e904_1_t1.jpg"
+            ],
+            "signed_target_urls": [
+                "http://localhost:8002/static/Face-swap/results/6bede1e1-e725-4561-b5bf-274c7fb2e904/targets/target_6bede1e1-e725-4561-b5bf-274c7fb2e904_1_t1.jpg?dummy_signed_url"
+            ],
+            "target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/6bede1e1-e725-4561-b5bf-274c7fb2e904/targets/target_face_0_6bede1e1-e725-4561-b5bf-274c7fb2e904_1.jpg"
+            ],
+            "signed_target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/6bede1e1-e725-4561-b5bf-274c7fb2e904/targets/target_face_0_6bede1e1-e725-4561-b5bf-274c7fb2e904_1.jpg?dummy_signed_url"
+            ],
+            "target_face_indices": [
+                0
+            ],
+            "target_face_count": 1,
+            "created_at": "2025-08-10 18:49:20",
+            "finished_at": "2025-08-10 18:49:26",
+            "file_url": "http://localhost:8002/static/Face-swap/results/6bede1e1-e725-4561-b5bf-274c7fb2e904/swapped/output.png",
+            "signed_swap_url": "http://localhost:8002/static/Face-swap/results/6bede1e1-e725-4561-b5bf-274c7fb2e904/swapped/output.png?dummy_signed_url"
+        },
+        "42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a": {
+            "user_id": "1",
+            "template_ids": [
+                "3"
+            ],
+            "template_path": "static/Face-swap/Templates/3.jpg",
+            "target_paths": [
+                "static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/targets/target_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_1_t1.jpg",
+                "static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/targets/target_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_1_t2.jpg"
+            ],
+            "template_url": "http://localhost:8002/static/Face-swap/Templates/3.jpg",
+            "masked_face_url": "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/template_masked_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_3.jpg",
+            "signed_masked_face_url": "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/template_masked_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_3.jpg?dummy_signed_url",
+            "detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/template_face_0_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_3.jpg",
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/template_face_1_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_3.jpg",
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/template_face_2_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_3.jpg",
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/template_face_3_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_3.jpg",
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/template_face_4_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_3.jpg"
+            ],
+            "signed_detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/template_face_0_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_3.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/template_face_1_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_3.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/template_face_2_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_3.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/template_face_3_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_3.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/template_face_4_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_3.jpg?dummy_signed_url"
+            ],
+            "template_face_indices": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "template_face_count": 5,
+            "is_multi_face": true,
+            "credits": 20,
+            "status": "finished",
+            "iterations": 2,
+            "result_image_dimensions": {
+                "width": 380,
+                "height": 450,
+                "orientation": "portrait"
+            },
+            "faces_to_swap": 2,
+            "target_urls": [
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/targets/target_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_1_t1.jpg",
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/targets/target_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_1_t2.jpg"
+            ],
+            "signed_target_urls": [
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/targets/target_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_1_t1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/targets/target_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_1_t2.jpg?dummy_signed_url"
+            ],
+            "target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/targets/target_face_0_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_1.jpg",
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/targets/target_face_1_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_1.jpg"
+            ],
+            "signed_target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/targets/target_face_0_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/targets/target_face_1_42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a_1.jpg?dummy_signed_url"
+            ],
+            "target_face_indices": [
+                0,
+                1
+            ],
+            "target_face_count": 2,
+            "created_at": "2025-08-10 18:50:12",
+            "finished_at": "2025-08-10 18:50:23",
+            "file_url": "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/swapped/output.png",
+            "signed_swap_url": "http://localhost:8002/static/Face-swap/results/42c1ac05-58aa-4c7f-a0fb-793d4c8d0e1a/swapped/output.png?dummy_signed_url"
+        },
+        "1bf15e74-5e91-47ce-8705-fe56d87f8039": {
+            "user_id": "1",
+            "template_ids": [
+                "3"
+            ],
+            "template_path": "static/Face-swap/Templates/3.jpg",
+            "target_paths": [
+                "static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/targets/target_1bf15e74-5e91-47ce-8705-fe56d87f8039_1_t1.jpg",
+                "static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/targets/target_1bf15e74-5e91-47ce-8705-fe56d87f8039_1_t2.jpg"
+            ],
+            "template_url": "http://localhost:8002/static/Face-swap/Templates/3.jpg",
+            "masked_face_url": "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/template_masked_1bf15e74-5e91-47ce-8705-fe56d87f8039_3.jpg",
+            "signed_masked_face_url": "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/template_masked_1bf15e74-5e91-47ce-8705-fe56d87f8039_3.jpg?dummy_signed_url",
+            "detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/template_face_0_1bf15e74-5e91-47ce-8705-fe56d87f8039_3.jpg",
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/template_face_1_1bf15e74-5e91-47ce-8705-fe56d87f8039_3.jpg",
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/template_face_2_1bf15e74-5e91-47ce-8705-fe56d87f8039_3.jpg",
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/template_face_3_1bf15e74-5e91-47ce-8705-fe56d87f8039_3.jpg",
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/template_face_4_1bf15e74-5e91-47ce-8705-fe56d87f8039_3.jpg"
+            ],
+            "signed_detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/template_face_0_1bf15e74-5e91-47ce-8705-fe56d87f8039_3.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/template_face_1_1bf15e74-5e91-47ce-8705-fe56d87f8039_3.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/template_face_2_1bf15e74-5e91-47ce-8705-fe56d87f8039_3.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/template_face_3_1bf15e74-5e91-47ce-8705-fe56d87f8039_3.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/template_face_4_1bf15e74-5e91-47ce-8705-fe56d87f8039_3.jpg?dummy_signed_url"
+            ],
+            "template_face_indices": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "template_face_count": 5,
+            "is_multi_face": true,
+            "credits": 20,
+            "status": "finished",
+            "iterations": 2,
+            "result_image_dimensions": {
+                "width": 380,
+                "height": 450,
+                "orientation": "portrait"
+            },
+            "faces_to_swap": 2,
+            "target_urls": [
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/targets/target_1bf15e74-5e91-47ce-8705-fe56d87f8039_1_t1.jpg",
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/targets/target_1bf15e74-5e91-47ce-8705-fe56d87f8039_1_t2.jpg"
+            ],
+            "signed_target_urls": [
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/targets/target_1bf15e74-5e91-47ce-8705-fe56d87f8039_1_t1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/targets/target_1bf15e74-5e91-47ce-8705-fe56d87f8039_1_t2.jpg?dummy_signed_url"
+            ],
+            "target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/targets/target_face_0_1bf15e74-5e91-47ce-8705-fe56d87f8039_1.jpg",
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/targets/target_face_1_1bf15e74-5e91-47ce-8705-fe56d87f8039_1.jpg"
+            ],
+            "signed_target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/targets/target_face_0_1bf15e74-5e91-47ce-8705-fe56d87f8039_1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/targets/target_face_1_1bf15e74-5e91-47ce-8705-fe56d87f8039_1.jpg?dummy_signed_url"
+            ],
+            "target_face_indices": [
+                0,
+                1
+            ],
+            "target_face_count": 2,
+            "created_at": "2025-08-10 18:52:20",
+            "finished_at": "2025-08-10 18:52:34",
+            "file_url": "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/swapped/output.png",
+            "signed_swap_url": "http://localhost:8002/static/Face-swap/results/1bf15e74-5e91-47ce-8705-fe56d87f8039/swapped/output.png?dummy_signed_url"
+        },
+        "383f2a50-934d-444f-8407-c88ff0d131a1": {
+            "user_id": "1",
+            "template_ids": [
+                "3"
+            ],
+            "template_path": "static/Face-swap/Templates/3.jpg",
+            "target_paths": [
+                "static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/targets/target_383f2a50-934d-444f-8407-c88ff0d131a1_1_t1.jpg",
+                "static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/targets/target_383f2a50-934d-444f-8407-c88ff0d131a1_1_t2.jpg"
+            ],
+            "template_url": "http://localhost:8002/static/Face-swap/Templates/3.jpg",
+            "masked_face_url": "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/template_masked_383f2a50-934d-444f-8407-c88ff0d131a1_3.jpg",
+            "signed_masked_face_url": "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/template_masked_383f2a50-934d-444f-8407-c88ff0d131a1_3.jpg?dummy_signed_url",
+            "detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/template_face_0_383f2a50-934d-444f-8407-c88ff0d131a1_3.jpg",
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/template_face_1_383f2a50-934d-444f-8407-c88ff0d131a1_3.jpg",
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/template_face_2_383f2a50-934d-444f-8407-c88ff0d131a1_3.jpg",
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/template_face_3_383f2a50-934d-444f-8407-c88ff0d131a1_3.jpg",
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/template_face_4_383f2a50-934d-444f-8407-c88ff0d131a1_3.jpg"
+            ],
+            "signed_detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/template_face_0_383f2a50-934d-444f-8407-c88ff0d131a1_3.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/template_face_1_383f2a50-934d-444f-8407-c88ff0d131a1_3.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/template_face_2_383f2a50-934d-444f-8407-c88ff0d131a1_3.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/template_face_3_383f2a50-934d-444f-8407-c88ff0d131a1_3.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/template_face_4_383f2a50-934d-444f-8407-c88ff0d131a1_3.jpg?dummy_signed_url"
+            ],
+            "template_face_indices": [
+                0,
+                1,
+                2,
+                3,
+                4
+            ],
+            "template_face_count": 5,
+            "is_multi_face": true,
+            "credits": 20,
+            "status": "finished",
+            "iterations": 2,
+            "result_image_dimensions": {
+                "width": 380,
+                "height": 450,
+                "orientation": "portrait"
+            },
+            "faces_to_swap": 2,
+            "target_urls": [
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/targets/target_383f2a50-934d-444f-8407-c88ff0d131a1_1_t1.jpg",
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/targets/target_383f2a50-934d-444f-8407-c88ff0d131a1_1_t2.jpg"
+            ],
+            "signed_target_urls": [
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/targets/target_383f2a50-934d-444f-8407-c88ff0d131a1_1_t1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/targets/target_383f2a50-934d-444f-8407-c88ff0d131a1_1_t2.jpg?dummy_signed_url"
+            ],
+            "target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/targets/target_face_0_383f2a50-934d-444f-8407-c88ff0d131a1_1.jpg",
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/targets/target_face_1_383f2a50-934d-444f-8407-c88ff0d131a1_1.jpg"
+            ],
+            "signed_target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/targets/target_face_0_383f2a50-934d-444f-8407-c88ff0d131a1_1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/targets/target_face_1_383f2a50-934d-444f-8407-c88ff0d131a1_1.jpg?dummy_signed_url"
+            ],
+            "target_face_indices": [
+                0,
+                1
+            ],
+            "target_face_count": 2,
+            "created_at": "2025-08-10 19:08:13",
+            "finished_at": "2025-08-10 19:08:26",
+            "file_url": "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/swapped/output.png",
+            "signed_swap_url": "http://localhost:8002/static/Face-swap/results/383f2a50-934d-444f-8407-c88ff0d131a1/swapped/output.png?dummy_signed_url"
+        },
+        "87216ec2-ae88-4e7f-aba3-7f7f3ba6f034": {
+            "user_id": "1",
+            "template_ids": [
+                "4"
+            ],
+            "template_path": "static/Face-swap/Templates/4.jpg",
+            "target_paths": [
+                "static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/targets/target_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_1_t1.jpg",
+                "static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/targets/target_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_1_t2.jpg"
+            ],
+            "template_url": "http://localhost:8002/static/Face-swap/Templates/4.jpg",
+            "masked_face_url": "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/template_masked_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_4.jpg",
+            "signed_masked_face_url": "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/template_masked_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_4.jpg?dummy_signed_url",
+            "detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/template_face_0_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_4.jpg",
+                "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/template_face_1_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_4.jpg"
+            ],
+            "signed_detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/template_face_0_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_4.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/template_face_1_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_4.jpg?dummy_signed_url"
+            ],
+            "template_face_indices": [
+                0,
+                1
+            ],
+            "template_face_count": 2,
+            "is_multi_face": true,
+            "credits": 20,
+            "status": "finished",
+            "iterations": 2,
+            "result_image_dimensions": {
+                "width": 380,
+                "height": 450,
+                "orientation": "portrait"
+            },
+            "faces_to_swap": 2,
+            "target_urls": [
+                "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/targets/target_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_1_t1.jpg",
+                "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/targets/target_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_1_t2.jpg"
+            ],
+            "signed_target_urls": [
+                "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/targets/target_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_1_t1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/targets/target_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_1_t2.jpg?dummy_signed_url"
+            ],
+            "target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/targets/target_face_0_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_1.jpg",
+                "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/targets/target_face_1_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_1.jpg"
+            ],
+            "signed_target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/targets/target_face_0_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/targets/target_face_1_87216ec2-ae88-4e7f-aba3-7f7f3ba6f034_1.jpg?dummy_signed_url"
+            ],
+            "target_face_indices": [
+                0,
+                1
+            ],
+            "target_face_count": 2,
+            "created_at": "2025-08-10 19:10:37",
+            "finished_at": "2025-08-10 19:10:49",
+            "file_url": "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/swapped/output.png",
+            "signed_swap_url": "http://localhost:8002/static/Face-swap/results/87216ec2-ae88-4e7f-aba3-7f7f3ba6f034/swapped/output.png?dummy_signed_url"
+        },
+        "baba8e47-b342-4e57-8ed2-c4643612ea52": {
+            "user_id": "1",
+            "template_ids": [
+                "4"
+            ],
+            "template_path": "static/Face-swap/Templates/4.jpg",
+            "target_paths": [
+                "static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/targets/target_baba8e47-b342-4e57-8ed2-c4643612ea52_1_t1.jpg",
+                "static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/targets/target_baba8e47-b342-4e57-8ed2-c4643612ea52_1_t2.jpg"
+            ],
+            "template_url": "http://localhost:8002/static/Face-swap/Templates/4.jpg",
+            "masked_face_url": "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/template_masked_baba8e47-b342-4e57-8ed2-c4643612ea52_4.jpg",
+            "signed_masked_face_url": "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/template_masked_baba8e47-b342-4e57-8ed2-c4643612ea52_4.jpg?dummy_signed_url",
+            "detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/template_face_0_baba8e47-b342-4e57-8ed2-c4643612ea52_4.jpg",
+                "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/template_face_1_baba8e47-b342-4e57-8ed2-c4643612ea52_4.jpg"
+            ],
+            "signed_detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/template_face_0_baba8e47-b342-4e57-8ed2-c4643612ea52_4.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/template_face_1_baba8e47-b342-4e57-8ed2-c4643612ea52_4.jpg?dummy_signed_url"
+            ],
+            "template_face_indices": [
+                0,
+                1
+            ],
+            "template_face_count": 2,
+            "is_multi_face": true,
+            "credits": 20,
+            "status": "finished",
+            "iterations": 2,
+            "result_image_dimensions": {
+                "width": 380,
+                "height": 450,
+                "orientation": "portrait"
+            },
+            "faces_to_swap": 2,
+            "target_urls": [
+                "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/targets/target_baba8e47-b342-4e57-8ed2-c4643612ea52_1_t1.jpg",
+                "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/targets/target_baba8e47-b342-4e57-8ed2-c4643612ea52_1_t2.jpg"
+            ],
+            "signed_target_urls": [
+                "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/targets/target_baba8e47-b342-4e57-8ed2-c4643612ea52_1_t1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/targets/target_baba8e47-b342-4e57-8ed2-c4643612ea52_1_t2.jpg?dummy_signed_url"
+            ],
+            "target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/targets/target_face_0_baba8e47-b342-4e57-8ed2-c4643612ea52_1.jpg",
+                "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/targets/target_face_1_baba8e47-b342-4e57-8ed2-c4643612ea52_1.jpg"
+            ],
+            "signed_target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/targets/target_face_0_baba8e47-b342-4e57-8ed2-c4643612ea52_1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/targets/target_face_1_baba8e47-b342-4e57-8ed2-c4643612ea52_1.jpg?dummy_signed_url"
+            ],
+            "target_face_indices": [
+                0,
+                1
+            ],
+            "target_face_count": 2,
+            "created_at": "2025-08-10 19:18:27",
+            "finished_at": "2025-08-10 19:18:40",
+            "file_url": "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/swapped/output.png",
+            "signed_swap_url": "http://localhost:8002/static/Face-swap/results/baba8e47-b342-4e57-8ed2-c4643612ea52/swapped/output.png?dummy_signed_url"
+        },
+        "4ff11629-28b5-4114-91b4-a4fefe89e09a": {
+            "user_id": "1",
+            "template_ids": [
+                "4"
+            ],
+            "template_path": "static/Face-swap/Templates/4.jpg",
+            "target_paths": [
+                "static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/targets/target_4ff11629-28b5-4114-91b4-a4fefe89e09a_1_t1.jpg",
+                "static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/targets/target_4ff11629-28b5-4114-91b4-a4fefe89e09a_1_t2.jpg"
+            ],
+            "template_url": "http://localhost:8002/static/Face-swap/Templates/4.jpg",
+            "masked_face_url": "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/template_masked_4ff11629-28b5-4114-91b4-a4fefe89e09a_4.jpg",
+            "signed_masked_face_url": "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/template_masked_4ff11629-28b5-4114-91b4-a4fefe89e09a_4.jpg?dummy_signed_url",
+            "detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/template_face_0_4ff11629-28b5-4114-91b4-a4fefe89e09a_4.jpg",
+                "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/template_face_1_4ff11629-28b5-4114-91b4-a4fefe89e09a_4.jpg"
+            ],
+            "signed_detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/template_face_0_4ff11629-28b5-4114-91b4-a4fefe89e09a_4.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/template_face_1_4ff11629-28b5-4114-91b4-a4fefe89e09a_4.jpg?dummy_signed_url"
+            ],
+            "template_face_indices": [
+                0,
+                1
+            ],
+            "template_face_count": 2,
+            "is_multi_face": true,
+            "credits": 20,
+            "status": "finished",
+            "iterations": 2,
+            "result_image_dimensions": {
+                "width": 380,
+                "height": 450,
+                "orientation": "portrait"
+            },
+            "faces_to_swap": 2,
+            "target_urls": [
+                "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/targets/target_4ff11629-28b5-4114-91b4-a4fefe89e09a_1_t1.jpg",
+                "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/targets/target_4ff11629-28b5-4114-91b4-a4fefe89e09a_1_t2.jpg"
+            ],
+            "signed_target_urls": [
+                "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/targets/target_4ff11629-28b5-4114-91b4-a4fefe89e09a_1_t1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/targets/target_4ff11629-28b5-4114-91b4-a4fefe89e09a_1_t2.jpg?dummy_signed_url"
+            ],
+            "target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/targets/target_face_0_4ff11629-28b5-4114-91b4-a4fefe89e09a_1.jpg",
+                "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/targets/target_face_1_4ff11629-28b5-4114-91b4-a4fefe89e09a_1.jpg"
+            ],
+            "signed_target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/targets/target_face_0_4ff11629-28b5-4114-91b4-a4fefe89e09a_1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/targets/target_face_1_4ff11629-28b5-4114-91b4-a4fefe89e09a_1.jpg?dummy_signed_url"
+            ],
+            "target_face_indices": [
+                0,
+                1
+            ],
+            "target_face_count": 2,
+            "created_at": "2025-08-10 19:25:04",
+            "finished_at": "2025-08-10 19:25:17",
+            "file_url": "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/swapped/output.png",
+            "signed_swap_url": "http://localhost:8002/static/Face-swap/results/4ff11629-28b5-4114-91b4-a4fefe89e09a/swapped/output.png?dummy_signed_url"
+        },
+        "41542d4a-10e2-44d2-870a-62e41d0f921a": {
+            "user_id": "1",
+            "template_ids": [
+                "4"
+            ],
+            "template_path": "static/Face-swap/Templates/4.jpg",
+            "target_paths": [
+                "static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/targets/target_41542d4a-10e2-44d2-870a-62e41d0f921a_1_t1.jpg",
+                "static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/targets/target_41542d4a-10e2-44d2-870a-62e41d0f921a_1_t2.jpg"
+            ],
+            "template_url": "http://localhost:8002/static/Face-swap/Templates/4.jpg",
+            "masked_face_url": "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/template_masked_41542d4a-10e2-44d2-870a-62e41d0f921a_4.jpg",
+            "signed_masked_face_url": "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/template_masked_41542d4a-10e2-44d2-870a-62e41d0f921a_4.jpg?dummy_signed_url",
+            "detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/template_face_0_41542d4a-10e2-44d2-870a-62e41d0f921a_4.jpg",
+                "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/template_face_1_41542d4a-10e2-44d2-870a-62e41d0f921a_4.jpg"
+            ],
+            "signed_detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/template_face_0_41542d4a-10e2-44d2-870a-62e41d0f921a_4.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/template_face_1_41542d4a-10e2-44d2-870a-62e41d0f921a_4.jpg?dummy_signed_url"
+            ],
+            "template_face_indices": [
+                0,
+                1
+            ],
+            "template_face_count": 2,
+            "is_multi_face": true,
+            "credits": 20,
+            "status": "finished",
+            "iterations": 2,
+            "result_image_dimensions": {
+                "width": 380,
+                "height": 450,
+                "orientation": "portrait"
+            },
+            "faces_to_swap": 2,
+            "target_urls": [
+                "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/targets/target_41542d4a-10e2-44d2-870a-62e41d0f921a_1_t1.jpg",
+                "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/targets/target_41542d4a-10e2-44d2-870a-62e41d0f921a_1_t2.jpg"
+            ],
+            "signed_target_urls": [
+                "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/targets/target_41542d4a-10e2-44d2-870a-62e41d0f921a_1_t1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/targets/target_41542d4a-10e2-44d2-870a-62e41d0f921a_1_t2.jpg?dummy_signed_url"
+            ],
+            "target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/targets/target_face_0_41542d4a-10e2-44d2-870a-62e41d0f921a_1.jpg",
+                "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/targets/target_face_1_41542d4a-10e2-44d2-870a-62e41d0f921a_1.jpg"
+            ],
+            "signed_target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/targets/target_face_0_41542d4a-10e2-44d2-870a-62e41d0f921a_1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/targets/target_face_1_41542d4a-10e2-44d2-870a-62e41d0f921a_1.jpg?dummy_signed_url"
+            ],
+            "target_face_indices": [
+                0,
+                1
+            ],
+            "target_face_count": 2,
+            "created_at": "2025-08-10 19:26:50",
+            "finished_at": "2025-08-10 19:27:05",
+            "file_url": "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/swapped/output.png",
+            "signed_swap_url": "http://localhost:8002/static/Face-swap/results/41542d4a-10e2-44d2-870a-62e41d0f921a/swapped/output.png?dummy_signed_url"
         }
     }
 }

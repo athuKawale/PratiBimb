@@ -45,6 +45,8 @@ g_desired_face_analysis = None
 INPUT_FACESETS = []
 TARGET_FACES = []
 VIDEO_INPUTFACES : List = []
+TEMP_FACESET : List = []
+
 
 # Hard-coded Settings instance
 CFG: Settings = Settings.__new__(Settings)

@@ -10,7 +10,7 @@ from roop.globals import BASE_URL
 from roop.face_util import extract_face_images
 from roop import globals as roop_globals
 
-def process_and_save_target_faces(files: List[UploadFile], file_url : str, user_id: str, generation_id: str, output_dir: str):
+def process_and_save_target_faces(files: List[UploadFile], file_url : str, user_id: str, generation_id: str, output_dir: str, generation_data : dict):
     target_urls = []
     signed_target_urls = []
     target_face_urls = []
@@ -74,8 +74,10 @@ def process_and_save_target_faces(files: List[UploadFile], file_url : str, user_
             face = face_data[0]
             face.mask_offsets = (0,0,0,0,1,20) # Default mask offsets
             face_set.faces.append(face)
-            roop_globals.INPUT_FACESETS.append(face_set)
+            roop_globals.TEMP_FACESET.append(face_set)
         
+        # Put total faces to swap in GENERATION DATA
+        generation_data["faces_to_swap"] = len(roop_globals.VIDEO_INPUTFACES)
 
         print(f"Found {len(target_faces_data)} face(s), in {target_path} applying mask.")
 
