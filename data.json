@@ -1,0 +1,64 @@
+{
+    "a": {
+        "8a3c5d7f-f070-45e9-bd22-3b0a2e59de13": {
+            "user_id": "a",
+            "template_ids": [
+                "4"
+            ],
+            "template_path": "static/Face-swap/Templates/4.jpg",
+            "target_paths": [
+                "static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/targets/target_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_a_t1.jpg",
+                "static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/targets/target_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_a_t2.jpg"
+            ],
+            "template_url": "http://localhost:8002/static/Face-swap/Templates/4.jpg",
+            "masked_face_url": "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/template_masked_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_4.jpg",
+            "signed_masked_face_url": "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/template_masked_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_4.jpg?dummy_signed_url",
+            "detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/template_face_0_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_4.jpg",
+                "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/template_face_1_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_4.jpg"
+            ],
+            "signed_detected_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/template_face_0_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_4.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/template_face_1_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_4.jpg?dummy_signed_url"
+            ],
+            "template_face_indices": [
+                0,
+                1
+            ],
+            "template_face_count": 2,
+            "is_multi_face": true,
+            "credits": 20,
+            "status": "finished",
+            "result_image_dimensions": {
+                "width": 380,
+                "height": 450,
+                "orientation": "portrait"
+            },
+            "target_urls": [
+                "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/targets/target_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_a_t1.jpg",
+                "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/targets/target_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_a_t2.jpg"
+            ],
+            "signed_target_urls": [
+                "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/targets/target_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_a_t1.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/targets/target_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_a_t2.jpg?dummy_signed_url"
+            ],
+            "target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/targets/target_face_0_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_a.jpg",
+                "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/targets/target_face_1_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_a.jpg"
+            ],
+            "signed_target_face_urls": [
+                "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/targets/target_face_0_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_a.jpg?dummy_signed_url",
+                "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/targets/target_face_1_8a3c5d7f-f070-45e9-bd22-3b0a2e59de13_a.jpg?dummy_signed_url"
+            ],
+            "target_face_indices": [
+                0,
+                1
+            ],
+            "target_face_count": 2,
+            "created_at": "2025-08-10 11:45:59",
+            "finished_at": "2025-08-10 11:46:01",
+            "file_url": "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/swapped/4_11-46-00.png",
+            "signed_swap_url": "http://localhost:8002/static/Face-swap/results/8a3c5d7f-f070-45e9-bd22-3b0a2e59de13/swapped/4_11-46-00.png?dummy_signed_url"
+        }
+    }
+}

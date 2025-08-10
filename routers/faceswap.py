@@ -5,6 +5,7 @@ import uuid
 import json
 import asyncio
 import logging
+from fastapi.responses import JSONResponse
 import requests
 from PIL import Image
 from metadata import version
@@ -16,6 +17,7 @@ from roop.ProcessEntry import ProcessEntry
 from roop.core import batch_process_regular
 from typing import List, Dict, Any, Optional
 from contextlib import redirect_stderr, redirect_stdout
+from scripts.save_to_json import save_generation_data_to_json
 from scripts.upload_template_func import process_and_save_faces
 from scripts.upload_target_func import process_and_save_target_faces
 from fastapi import APIRouter, HTTPException, Form, File, UploadFile
@@ -34,7 +36,7 @@ router = APIRouter(
 
 OUTPUT_DIR = "static/Face-swap/results"
 TEMPLATES_DIR = "static/Face-swap/Templates"
-
+DATA_FILE = "data.json"
 GENERATION_DATA = {} 
 
 with open("static/templates.json", "r") as f:
@@ -158,6 +160,8 @@ async def run_face_swap(request : SwapFaceRequest):
         GENERATION_DATA[generation_id]["status"] = "error"
         GENERATION_DATA[generation_id]["details"] = f"Faceswap Failed : \n{e}"
 
+        #Save GENRATION DATA to json
+        save_generation_data_to_json(GENERATION_DATA[generation_id]["user_id"], generation_id, GENERATION_DATA)
         log_and_print(f"Face swap failed: {e}")
 
         roop_globals.INPUT_FACESETS = []
@@ -177,6 +181,9 @@ async def run_face_swap(request : SwapFaceRequest):
     GENERATION_DATA[generation_id]["file_url"] = file_url
     GENERATION_DATA[generation_id]["signed_swap_url"] = signed_swap_url
 
+    #Save GENRATION DATA to json
+    save_generation_data_to_json(GENERATION_DATA[generation_id]["user_id"], generation_id, GENERATION_DATA)
+   
     print(f"[{GENERATION_DATA[generation_id]['finished_at']}] Face swap completed.")
 
 
@@ -311,6 +318,7 @@ async def upload_template(
         )
     
     GENERATION_DATA[generation_id] = {
+        "user_id" : user_id,
         "template_ids": template_ids,
         "template_path": file_path,
         "target_paths": [],
@@ -358,6 +366,74 @@ async def upload_template(
         "credits": 20,
         "status": GENERATION_DATA[generation_id]["status"],
     }
+
+@router.get("/users/{user_id}/previous_target_faces")
+async def get_previous_target_faces(user_id: str):
+    if not os.path.exists(DATA_FILE):
+        raise HTTPException(status_code=404, detail="Data store unavailable.")
+
+    with open(DATA_FILE, "r") as f:
+        try:
+            all_data = json.load(f)
+        except json.JSONDecodeError:
+            raise HTTPException(status_code=500, detail="Could not parse data file.")
+
+    user_data = all_data.get(user_id)
+    if not user_data:
+        raise HTTPException(status_code=404, detail="User not found.")
+
+    # Aggregate target images and detected faces as required
+    target_images = []
+    detected_faces = []
+    for generation_id, generation in user_data.items():
+
+        # Target images (one entry per target image, with rich metadata)
+        for idx, target_url in enumerate(generation.get("signed_target_urls", [])):
+            # You can enrich with any extra metadata you store per image
+            item = {
+                "target_id": f"{generation_id}_{idx}",
+                "s3_path": generation.get("target_urls", [])[idx] if len(generation.get("target_urls", [])) > idx else None,
+                "signed_url": target_url,
+                "generation_id": generation_id,
+                "target_index": idx,
+                "filename": os.path.basename(target_url.split("?")[0]) if target_url else None,
+                "upload_timestamp": generation.get("upload_timestamp", "upload"),
+                "last_modified": generation.get("last_modified", ""),
+                "file_size": generation.get("file_size", 0),
+                "image_type": "full_target"
+            }
+            target_images.append(item)
+
+        # Detected faces (one entry per detected face, with rich metadata)
+        for i, face_url in enumerate(generation.get("signed_target_face_urls", [])):
+            item = {
+                "face_id": f"{generation_id}_{i}_0",
+                "s3_path": generation.get("target_face_urls", [])[i] if len(generation.get("target_face_urls", [])) > i else None,
+                "signed_url": face_url,
+                "generation_id": generation_id,
+                "target_index": i,
+                "face_index": 0,
+                "filename": os.path.basename(face_url.split("?")[0]) if face_url else None,
+                "upload_timestamp": generation.get("upload_timestamp", "upload"),
+                "last_modified": generation.get("last_modified", ""),
+                "file_size": generation.get("face_file_size", 0),
+                "image_type": "detected_face"
+            }
+            detected_faces.append(item)
+
+    response = {
+        "user_id": user_id,
+        "timestamp": datetime.now().isoformat(),
+        "target_images": target_images,
+        "target_count": len(target_images),
+        "detected_faces": detected_faces,
+        "detected_count": len(detected_faces),
+        "usage_info": {
+            "target_images": "Use 'signed_url' from target_images for file_url parameter in upload_targets endpoint",
+            "detected_faces": "Individual faces extracted from target images - for preview/selection purposes"
+        }
+    }
+    return JSONResponse(content=response)
 
 @router.post("/upload_targets")
 async def upload_targets(files: List[UploadFile] = File(...), user_id: str = Form(...), generation_id: str = Form(...), file_url : str = Form(...)):
@@ -436,7 +512,7 @@ async def get_swap_status(generation_id: str):
     progress = extract_last_percentage(log_file_path)
 
     if GENERATION_DATA[generation_id]["status"] == "finished" :
-        
+             
         return {
             "generation_id": generation_id,
             "progress": 100,
