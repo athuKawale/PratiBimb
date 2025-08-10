@@ -35,18 +35,36 @@ GENERATION_DATA = {}
 
 """Setup logging for face swap operations"""
 
-log_file_path = os.path.join(OUTPUT_DIR, "faceswap.log")
-logger = logging.getLogger("faceswap")
-logger.setLevel(logging.INFO)
-# Avoid duplicate handlers if re-called
-if not logger.handlers:
+# Dictionary to store loggers per generation_id
+loggers = {}
+
+def get_logger_for_generation(generation_id: str) -> logging.Logger:
+    if generation_id in loggers:
+        return loggers[generation_id]
+
+    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
+    os.makedirs(generation_dir, exist_ok=True)
+    log_file_path = os.path.join(generation_dir, "faceswap.log")
+
+    logger = logging.getLogger(f"faceswap_{generation_id}")
+    logger.setLevel(logging.INFO)
+
+    # Clear existing handlers for this logger to avoid duplicates
+    if logger.hasHandlers():
+        logger.handlers.clear()
+
     file_handler = logging.FileHandler(log_file_path, mode='w')
     formatter = logging.Formatter('%(asctime)s - %(message)s')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-def log_and_print(msg: str):
-    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
+    loggers[generation_id] = logger
+    return logger
+
+def log_and_print(generation_id: str, msg: str):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(timestamp, msg)
+    logger = get_logger_for_generation(generation_id)
     logger.info(msg)
 
 def extract_last_percentage(log_file: str) -> float:
@@ -75,7 +93,11 @@ def run_video_swap_background(group_ids, generation_id):
 
 async def run_video_swap(group_ids: list, generation_id: str):
 
-    log_and_print("Starting face swap process...")  
+    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
+        
+    log_file_path = os.path.join(generation_dir, "faceswap.log")
+
+    log_and_print(generation_id, "Starting face swap process...")  
 
     Template = GENERATION_DATA[generation_id]["templatePath"]
 
@@ -138,7 +160,7 @@ async def run_video_swap(group_ids: list, generation_id: str):
 
             GENERATION_DATA[generation_id]["details"] = f"Faceswap Failed : \n{e}"
 
-            log_and_print(f"Face swap failed: {e}")
+            log_and_print(generation_id, f"Face swap failed: {e}")
 
             roop_globals.INPUT_FACESETS = []
             roop_globals.TARGET_FACES = []
@@ -401,6 +423,10 @@ async def faceswap(request: Request, generation_id : str):
 @router.get("/faceswap/status/{generation_id}")
 async def get_swap_status(generation_id: str):
     
+    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
+
+    log_file_path = os.path.join(generation_dir, "faceswap.log")
+
     progress = extract_last_percentage(log_file_path)
 
     if GENERATION_DATA[generation_id]["status"] == "finished" :

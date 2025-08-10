@@ -40,19 +40,38 @@ with open("static/templates.json", "r") as f:
 
 """Setup logging for face swap operations"""
 
-log_file_path = os.path.join(OUTPUT_DIR, "faceswap.log")
-logger = logging.getLogger("faceswap")
-logger.setLevel(logging.INFO)
-# Avoid duplicate handlers if re-called
-if not logger.handlers:
+# Dictionary to store loggers per generation_id
+loggers = {}
+
+def get_logger_for_generation(generation_id: str) -> logging.Logger:
+    if generation_id in loggers:
+        return loggers[generation_id]
+
+    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
+    os.makedirs(generation_dir, exist_ok=True)
+    log_file_path = os.path.join(generation_dir, "faceswap.log")
+
+    logger = logging.getLogger(f"faceswap_{generation_id}")
+    logger.setLevel(logging.INFO)
+
+    # Clear existing handlers for this logger to avoid duplicates
+    if logger.hasHandlers():
+        logger.handlers.clear()
+
     file_handler = logging.FileHandler(log_file_path, mode='w')
     formatter = logging.Formatter('%(asctime)s - %(message)s')
     file_handler.setFormatter(formatter)
     logger.addHandler(file_handler)
 
-def log_and_print(msg: str):
-    print(datetime.now().strftime("%Y-%m-%d %H:%M:%S"), msg)
+    loggers[generation_id] = logger
+    return logger
+
+def log_and_print(generation_id: str, msg: str):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    print(timestamp, msg)
+    logger = get_logger_for_generation(generation_id)
     logger.info(msg)
+
 
 def extract_last_percentage(log_file: str) -> float:
     if not os.path.exists(log_file):
@@ -81,24 +100,21 @@ def run_face_swap_background(request):
 
 async def run_face_swap(request : SwapFaceRequest):
 
-    log_and_print("Starting face swap process...")  
-    
     generation_id = request.generation_id
+
+    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
+        
+    log_file_path = os.path.join(generation_dir, "faceswap.log")
+
+    log_and_print(generation_id, "Starting face swap process...")
+
     source_indices = request.source_indices
     target_indices = request.target_indices
-    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
     
     generation_data = GENERATION_DATA.get(generation_id)
 
     if not generation_data:
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "status": 400,
-                "error": "Bad Request",
-                "message": "Invalid generation_id. Please upload template and target images first."
-            }
-        )
+        raise HTTPException(status_code=400,detail="Invalid generation_id. Please upload template and target images first.")
     
     # Set roop_globals for face swapping
     roop_globals.target_path = generation_data["template_path"]
@@ -170,7 +186,7 @@ async def run_face_swap(request : SwapFaceRequest):
             #Save GENRATION DATA to json
             save_generation_data_to_json(generation_data["user_id"], generation_id, GENERATION_DATA)
             
-            log_and_print(f"Face swap failed: {e}")
+            log_and_print(generation_id, f"Face swap failed: {e}")
 
             roop_globals.INPUT_FACESETS = []
             roop_globals.TARGET_FACES = []
@@ -536,6 +552,10 @@ async def get_swap_status(generation_id: str):
     if generation_id not in GENERATION_DATA :
         raise HTTPException(status_code=404, detail="Invalid Generation ID")
     
+    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
+    
+    log_file_path = os.path.join(generation_dir, "faceswap.log")
+
     progress = extract_last_percentage(log_file_path)
 
     if GENERATION_DATA[generation_id]["status"] == "finished" :
