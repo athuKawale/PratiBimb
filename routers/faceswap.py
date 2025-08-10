@@ -88,8 +88,8 @@ async def run_face_swap(request : SwapFaceRequest):
     log_and_print("Starting face swap process...")  
     
     generation_id = request.generation_id
-    roop_globals.source_indices = request.source_indices
-    roop_globals.target_indices = request.target_indices
+    source_indices = request.source_indices
+    target_indices = request.target_indices
     generation_dir = os.path.join(OUTPUT_DIR, generation_id)
     
     generation_data = GENERATION_DATA.get(generation_id)
@@ -120,10 +120,10 @@ async def run_face_swap(request : SwapFaceRequest):
     
     temp_faceset = []
     for i in range(len(roop_globals.TARGET_FACES)):
-        if i not in roop_globals.source_indices:
+        if i not in source_indices:
             temp_faceset.append(roop_globals.TARGET_FACES[i])
         else :
-            temp_faceset.append(roop_globals.INPUT_FACESETS[roop_globals.target_indices[roop_globals.source_indices.index(i)]])
+            temp_faceset.append(roop_globals.INPUT_FACESETS[target_indices[source_indices.index(i)]])
 
     roop_globals.INPUT_FACESETS = temp_faceset
 

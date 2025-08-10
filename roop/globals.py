@@ -5,8 +5,6 @@ source_path: str = ''
 source_path_video: List[str] = []
 target_path: str = ''
 output_path: str = ''
-source_indices: List[int] = []
-target_indices: List[int] = []
 target_folder_path = None
 startup_args = None
 
@@ -24,7 +22,7 @@ target_face_index = 0
 video_encoder = None
 video_quality = None
 max_memory = None
-execution_providers: List[str] = ['CUDAExecutionProvider']
+execution_providers: List[str] = ['CPUExecutionProvider']
 force_fp32: bool = False
 execution_queue_count: int = 1
 execution_threads = 4

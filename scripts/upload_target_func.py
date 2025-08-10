@@ -36,8 +36,8 @@ def process_and_save_target_faces(files: List[UploadFile], file_url : str, user_
             with open(target_path, "wb") as buffer:
                 buffer.write(file.file.read())
         
-    if file_url :
-
+    if file_url is not None and file_url != '':
+        
         response = requests.get(file_url)
 
         filename = str(Path(urlparse(file_url).path).name)
