@@ -1,18 +1,15 @@
 
-import argparse
 import os
 import sys
 import glob
-
-# Add project root to path to allow relative imports
+import argparse
 sys.path.append(os.getcwd())
-
+from roop.FaceSet import FaceSet
+from roop import utilities as util
 from roop import globals as roop_globals
 from roop.core import batch_process_regular
 from roop.face_util import extract_face_images
 from roop.ProcessEntry import ProcessEntry
-from roop.FaceSet import FaceSet
-from roop import utilities as util
 
 def get_args():
     """Parses command-line arguments."""

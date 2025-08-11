@@ -69,3 +69,4 @@ CFG.output_show_video = True
 CFG.launch_browser = True
 
 BASE_URL = "http://localhost:8002"
+DATA_FILE = "data.json"
