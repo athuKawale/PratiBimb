@@ -1,3 +1,5 @@
+import os
+import sys
 import uvicorn
 import warnings
 from fastapi import FastAPI
@@ -8,7 +10,13 @@ from metadata import version, title, description
 from roop.utilities import delete_temp_directory
 from concurrent.futures import ProcessPoolExecutor
 
+# single thread doubles cuda performance - needs to be set before torch import
+if any(arg.startswith('--execution-provider') for arg in sys.argv):
+    os.environ['OMP_NUM_THREADS'] = '1'
+
 warnings.filterwarnings("ignore", message="resource_tracker: There appear to be")
+warnings.filterwarnings('ignore', category=FutureWarning, module='insightface')
+warnings.filterwarnings('ignore', category=UserWarning, module='torchvision')
 
 process_pool = ProcessPoolExecutor()
 

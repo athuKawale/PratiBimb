@@ -3,7 +3,6 @@ import numpy as np
 from pathlib import Path
 from roop.FaceSet import FaceSet
 from roop.face_util import extract_face_images
-from roop import globals as roop_globals
 from roop.globals import BASE_URL
 
 def process_and_save_template_faces(source_path, generation_id, template_id, output_dir):
@@ -26,11 +25,11 @@ def process_and_save_template_faces(source_path, generation_id, template_id, out
          face_set.AverageEmbeddings()
     
     if len(face_set.faces) <= 1:
-        roop_globals.face_swap_mode = 'all_input'
+        globals.face_swap_mode = 'all_input'
     else :
-        roop_globals.face_swap_mode = 'selected'
+        globals.face_swap_mode = 'selected'
         
-    roop_globals.TARGET_FACES.append(face_set)
+    globals.TARGET_FACES.append(face_set)
 
     # Create output directories
     results_dir = Path(output_dir) / str(generation_id)

@@ -6,7 +6,7 @@ import argparse
 sys.path.append(os.getcwd())
 from roop.FaceSet import FaceSet
 from roop import utilities as util
-from roop import globals as roop_globals
+import roop.globals
 from roop.core import batch_process_regular
 from roop.face_util import extract_face_images
 from roop.ProcessEntry import ProcessEntry
@@ -20,9 +20,6 @@ def get_args():
     
     # Simplified options from the UI
     parser.add_argument('--swap-model', dest='swap_model', default='InSwapper 128', choices=["InSwapper 128", "ReSwapper 128", "ReSwapper 256"], help='The face swapping model to use.')
-    parser.add_argument('--enhancer', dest='enhancer', default='None', choices=["None", "Codeformer", "DMDNet", "GFPGAN", "GPEN", "Restoreformer++"], help='Face enhancer to use.')
-    parser.add_argument('--distance_threshold', dest='distance_threshold', type=float, default=0.65, help='Lower values mean more similar faces.')
-    parser.add_argument('--blend-ratio', dest='blend_ratio', type=float, default=0.65, help='How much of the original face to blend in.')
 
     return parser.parse_args()
 
@@ -46,22 +43,15 @@ def run():
     output_dir = os.path.dirname(args.output_file)
     os.makedirs(output_dir, exist_ok=True)
     
-    roop_globals.output_path = output_dir
-    if roop_globals.CFG.clear_output:
-        util.clean_dir(roop_globals.output_path)
+    roop.globals.output_path = output_dir
+    if roop.globals.clear_output:
+        util.clean_dir(roop.globals.output_path)
 
-    roop_globals.target_path = args.target_img
-    roop_globals.selected_enhancer = args.enhancer
-    roop_globals.distance_threshold = args.distance_threshold
-    roop_globals.blend_ratio = args.blend_ratio
+    roop.globals.target_path = args.target_img
     
     # Hardcoded globals for multi-face image swap
-    roop_globals.face_swap_mode = "all_input" # Swap all detected faces
-    roop_globals.no_face_action = 0 # Use untouched original frame
-    roop_globals.autorotate_faces = True
-    roop_globals.subsample_size = 128
-    roop_globals.mask_engine = 'None'
-    roop_globals.clip_text = None
+    roop.globals.face_swap_mode = "all_input" # Swap all detected faces
+    roop.globals.clip_text = None
 
     # Load source faces
     print("Analyzing source images...")
@@ -76,20 +66,19 @@ def run():
             face = face_data[0]
             face.mask_offsets = (0,0,0,0,1,20) # Default mask offsets
             face_set.faces.append(face)
-            roop_globals.INPUT_FACESETS.append(face_set)
+            roop.globals.INPUT_FACESETS.append(face_set)
     
-    if not roop_globals.INPUT_FACESETS:
+    if not roop.globals.INPUT_FACESETS:
         print("Error: No faces were detected in any of the source images.")
         sys.exit(1)
-    print(f"Found a total of {len(roop_globals.INPUT_FACESETS)} faces to swap.")
+    print(f"Found a total of {len(roop.globals.INPUT_FACESETS)} faces to swap.")
 
     # Prepare target file process entry
     list_files_process = [ProcessEntry(args.target_img, 0, 1, 0)]
     print(f"Target set to: {args.target_img}")
 
     # Set some more required globals
-    roop_globals.execution_threads = roop_globals.CFG.max_threads
-    roop_globals.max_memory = roop_globals.CFG.memory_limit if roop_globals.CFG.memory_limit > 0 else None
+    roop.globals.max_memory = roop.globals.memory_limit if roop.globals.memory_limit > 0 else None
 
     print("Starting face swap process...")
     
@@ -97,8 +86,8 @@ def run():
         swap_model=args.swap_model,
         output_method="File",      
         files=list_files_process,
-        masking_engine=roop_globals.mask_engine,
-        new_clip_text=roop_globals.clip_text,
+        masking_engine=roop.globals.mask_engine,
+        new_clip_text=roop.globals.clip_text,
         use_new_method=True,
         imagemask=None,
         restore_original_mouth=False,

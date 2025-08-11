@@ -26,7 +26,7 @@ def get_face_analyser() -> Any:
             # removed genderage
             allowed_modules = roop.globals.g_desired_face_analysis
             roop.globals.g_current_face_analysis = roop.globals.g_desired_face_analysis
-            if roop.globals.CFG.force_cpu:
+            if 'CPUExecutionProvider' in roop.globals.execution_providers:
                 print("Forcing CPU for Face Analysis")
                 FACE_ANALYSER = insightface.app.FaceAnalysis(
                     name="buffalo_l",
