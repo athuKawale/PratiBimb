@@ -19,15 +19,12 @@ import argparse
 from time import time
 
 import roop.globals
-import roop.metadata
 import roop.utilities as util
 import roop.util_ffmpeg as ffmpeg
-from settings import Settings
-from roop.face_util import extract_face_images
 from roop.ProcessEntry import ProcessEntry
 from roop.ProcessMgr import ProcessMgr
 from roop.ProcessOptions import ProcessOptions
-from roop.capturer import get_video_frame_total, release_video
+from roop.capturer import get_video_frame_total
 
 
 clip_text = None

@@ -1,2 +1,2 @@
 name = 'PratiBimb'
-version = '0.0.1'
+version = '2.1.0'
