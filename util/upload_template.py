@@ -4,8 +4,10 @@ from pathlib import Path
 from roop.FaceSet import FaceSet
 from roop.face_util import extract_face_images
 from roop import globals as roop_globals
+from roop.globals import BASE_URL
 
-def process_and_save_faces(source_path, generation_id, template_id, output_dir):
+def process_and_save_template_faces(source_path, generation_id, template_id, output_dir):
+    
     print("Analyzing source image...")
     print(source_path)
     
@@ -14,12 +16,21 @@ def process_and_save_faces(source_path, generation_id, template_id, output_dir):
         print("Error: No face detected in the source image.")
         return None, []
     
+    face_set = FaceSet()
     for face_data in source_faces_data:
-        face_set = FaceSet()
         face = face_data[0]
         face.mask_offsets = (0,0,0,0,1,20) # Default mask offsets
         face_set.faces.append(face)
-        roop_globals.TARGET_FACES.append(face_set)
+        
+    if len(face_set.faces) > 1:
+         face_set.AverageEmbeddings()
+    
+    if len(face_set.faces) <= 1:
+        roop_globals.face_swap_mode = 'all_input'
+    else :
+        roop_globals.face_swap_mode = 'selected'
+        
+    roop_globals.TARGET_FACES.append(face_set)
 
     # Create output directories
     results_dir = Path(output_dir) / str(generation_id)
@@ -46,11 +57,11 @@ def process_and_save_faces(source_path, generation_id, template_id, output_dir):
         masked_filename = f"template_masked_{generation_id}_{template_id}.jpg"
         masked_path = results_dir / masked_filename
         cv2.imwrite(str(masked_path), output_image)
-        masked_face_path = f"/{output_dir}/{generation_id}/{masked_filename}"
+        masked_face_url = f"{BASE_URL}/{output_dir}/{generation_id}/{masked_filename}"
 
     except Exception as e:
         print(f"Error creating masked face: {e}")
-        masked_face_path = None
+        masked_face_url = None
 
     # Save cropped faces
     detected_face_urls = []
@@ -59,9 +70,9 @@ def process_and_save_faces(source_path, generation_id, template_id, output_dir):
             face_filename = f"template_face_{i}_{generation_id}_{template_id}.jpg"
             face_path = results_dir / face_filename
             cv2.imwrite(str(face_path), face_image)
-            detected_face_urls.append(f"/{output_dir}/{generation_id}/{face_filename}")
+            detected_face_urls.append(f"{BASE_URL}/{output_dir}/{generation_id}/{face_filename}")
         except Exception as e:
             print(f"Error saving face {i}: {e}")
             continue
     
-    return masked_face_path, detected_face_urls
+    return masked_face_url, detected_face_urls

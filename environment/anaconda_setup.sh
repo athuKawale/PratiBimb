@@ -36,4 +36,6 @@ echo 'conda activate --stack' >> "$HOME/.bashrc"
 # (Optional) If using Conda environments for per-project isolation:
 conda install -c conda-forge cudatoolkit cudnn nccl
 
+ln -sf $HOME/anaconda3/envs/pratibimb/lib/python3.11/site-packages/nvidia/nvjitlink/lib/libnvJitLink.so.12 $HOME/anaconda3/envs/pratibimb/lib/python3.11/site-packages/nvidia/cusparse/lib/libnvJitLink.so.12
+
 # Restart shell (<no need to reboot>)
