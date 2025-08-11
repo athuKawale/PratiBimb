@@ -62,7 +62,7 @@ def process_and_save_target_faces(files: List[UploadFile], file_url : str, user_
         target_urls.append(f"{BASE_URL}/{target_path}")
         signed_target_urls.append(f"{BASE_URL}/{target_path}?dummy_signed_url")
 
-        target_faces_data = extract_face_images(target_path, (False, 0))
+        target_faces_data = extract_face_images(generation_data["globals"], target_path, (False, 0))
         
         if not target_faces_data:
             print(f"No faces detected in the {target_path} image.")

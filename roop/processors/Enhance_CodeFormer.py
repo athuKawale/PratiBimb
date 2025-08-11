@@ -1,10 +1,10 @@
-from typing import Any, List, Callable
 import cv2 
 import numpy as np
 import onnxruntime
 import roop.globals
-
-from roop.typing import Face, Frame, FaceSet
+from roop.FaceSet import FaceSet
+from insightface.app.common import Face
+from roop.typing import Frame
 from roop.utilities import resolve_relative_path
 
 class Enhance_CodeFormer():

@@ -122,7 +122,7 @@ async def upload_video(user_id: str = Form(...), template_id: str = Form(...)):
 
         print("\n\nAnalyzing target video for faces...\n\n")
 
-        target_face_data = extract_face_images(generation_data["globals"].target_path, (True, 0))
+        target_face_data = extract_face_images(generation_data["globals"], generation_data["globals"].target_path, (True, 0))
         
         if not target_face_data:
             raise HTTPException(
@@ -209,7 +209,7 @@ async def upload_new_faces(generation_id: str, group_id: str, file : UploadFile 
 
         print("Analyzing source image...\n\n")
 
-        source_faces_data = extract_face_images(source_file_path, (False, 0))
+        source_faces_data = extract_face_images(generation_data["globals"], source_file_path, (False, 0))
         if not source_faces_data:
             raise HTTPException(
                 status_code=422,

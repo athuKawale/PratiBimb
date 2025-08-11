@@ -20,6 +20,7 @@ from roop.core import limit_resources, release_resources
 # Server settings
 BASE_URL = "http://localhost:8002"
 DATA_FILE = "data.json"
+execution_providers: List[str] = ['CPUExecutionProvider']
 
 class GLOBALS :
 
@@ -62,7 +63,6 @@ class GLOBALS :
         # Performance & resource settings
         self.max_memory = None
         self.memory_limit = 0
-        self.execution_providers: List[str] = ['CPUExecutionProvider']
         self.execution_threads = 4
 
         # Miscellaneous processing options
@@ -80,7 +80,7 @@ class GLOBALS :
         self.g_current_face_analysis = None
         self.g_desired_face_analysis = None
 
-        if 'ROCMExecutionProvider' in self.execution_providers:
+        if 'ROCMExecutionProvider' in execution_providers:
             del torch
 
     def encode_execution_providers(execution_providers: List[str]) -> List[str]:
@@ -110,9 +110,9 @@ class GLOBALS :
         return self.encode_execution_providers(onnxruntime.get_available_providers())
 
     def suggest_execution_threads(self) -> int:
-        if 'DmlExecutionProvider' in self.execution_providers:
+        if 'DmlExecutionProvider' in execution_providers:
             return 1
-        if 'ROCMExecutionProvider' in self.execution_providers:
+        if 'ROCMExecutionProvider' in execution_providers:
             return 1
         return 8
 

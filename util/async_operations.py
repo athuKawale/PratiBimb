@@ -7,7 +7,6 @@ from roop.globals import BASE_URL
 from schema import SwapFaceRequest
 from util.logger import log_and_print
 from roop.ProcessEntry import ProcessEntry
-from roop.core import batch_process_regular
 from roop.capturer import get_video_frame_total
 from contextlib import redirect_stderr, redirect_stdout
 from util.save_to_json import save_generation_data_to_json
@@ -78,7 +77,7 @@ async def run_face_swap(GENERATION_DATA, OUTPUT_DIR, request : SwapFaceRequest):
 
             with open(log_file_path, 'a') as f:
                 with redirect_stdout(f), redirect_stderr(f):
-                    batch_process_regular(
+                    generation_data["globals"].batch_process_regular(
                         swap_model=generation_data["globals"].face_swapper_model,
                         output_method="File",
                         files=list_files_process,
@@ -90,7 +89,6 @@ async def run_face_swap(GENERATION_DATA, OUTPUT_DIR, request : SwapFaceRequest):
                         num_swap_steps=1,
                         progress=None,
                         selected_index=0,
-                        globals=generation_data["globals"]
                     )
 
         except Exception as e:
@@ -203,7 +201,7 @@ async def run_video_swap(GENERATION_DATA : dict, OUTPUT_DIR : str, group_ids: li
 
             with open(log_file_path, 'a') as f:
                 with redirect_stdout(f), redirect_stderr(f):
-                    batch_process_regular(
+                    generation_data["globals"].batch_process_regular(
                         swap_model=generation_data["globals"].face_swapper_model,
                         output_method="File", 
                         files=list_files_process,
@@ -215,7 +213,6 @@ async def run_video_swap(GENERATION_DATA : dict, OUTPUT_DIR : str, group_ids: li
                         num_swap_steps=1,
                         progress=None,
                         selected_index=0,
-                        globals=generation_data["globals"]
                     )
 
         except Exception as e:

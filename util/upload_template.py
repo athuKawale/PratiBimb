@@ -5,12 +5,12 @@ from roop.FaceSet import FaceSet
 from roop.face_util import extract_face_images
 from roop.globals import BASE_URL
 
-def process_and_save_template_faces(source_path, generation_id, template_id, output_dir):
+def process_and_save_template_faces(source_path, generation_id, template_id, output_dir, globals):
     
     print("Analyzing source image...")
     print(source_path)
     
-    source_faces_data = extract_face_images(source_path, (False, 0))
+    source_faces_data = extract_face_images(globals, source_path, (False, 0))
     if not source_faces_data:
         print("Error: No face detected in the source image.")
         return None, []

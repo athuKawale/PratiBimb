@@ -6,7 +6,7 @@ import cv2
 # Add project root to path to allow relative imports
 sys.path.append(os.getcwd())
 
-import roop.globals
+from roop.globals import GLOBALS
 from roop.core import batch_process_regular
 from roop.face_util import extract_face_images
 from roop.ProcessEntry import ProcessEntry
@@ -42,16 +42,18 @@ def run():
     output_dir = os.path.dirname(args.output_file)
     os.makedirs(output_dir, exist_ok=True)
     
-    roop.globals.output_path = output_dir
-    if roop.globals.clear_output:
-        util.clean_dir(roop.globals.output_path)
+    globals = GLOBALS()
 
-    roop.globals.source_path = args.source_img
-    roop.globals.target_path = args.target_video
-    roop.globals.face_swap_mode = "selected"
-    roop.globals.clip_text = None
-    roop.globals.execution_threads = roop.globals.max_threads
-    roop.globals.max_memory = roop.globals.memory_limit if roop.globals.memory_limit > 0 else None
+    globals.output_path = output_dir
+    if globals.clear_output:
+        util.clean_dir(globals.output_path)
+
+    globals.source_path = args.source_img
+    globals.target_path = args.target_video
+    globals.face_swap_mode = "selected"
+    globals.clip_text = None
+    globals.execution_threads = globals.max_threads
+    globals.max_memory = globals.memory_limit if globals.memory_limit > 0 else None
 
     # Load source face (for swapping)
     print("Analyzing source image...")
@@ -64,7 +66,7 @@ def run():
     face = source_faces_data[0][0]
     face.mask_offsets = (0,0,0,0,1,20)
     face_set.faces.append(face)
-    roop.globals.INPUT_FACESETS.append(face_set)
+    globals.INPUT_FACESETS.append(face_set)
     print(f"Found {len(source_faces_data)} face(s), using the first one.")
 
     target_face_data = extract_face_images(args.target_video, (True, 0))
@@ -77,7 +79,7 @@ def run():
         face = face_data[0]
         face.mask_offsets = (0,0,0,0,1,20)
         face_set.faces.append(face)
-        roop.globals.TARGET_FACES.append(face_set)
+        globals.TARGET_FACES.append(face_set)
     
     face_set.AverageEmbeddings()
     print(f"Found {len(target_face_data)} face(s), using the first one.")
@@ -121,11 +123,11 @@ def run():
     print("Starting face swap process...")
     
     batch_process_regular(
-        swap_model=roop.globals.face_swapper_model,
+        swap_model=globals.face_swapper_model,
         output_method="File", # "File", "Virtual Camera"
         files=list_files_process,
-        masking_engine=roop.globals.mask_engine,
-        new_clip_text=roop.globals.clip_text,
+        masking_engine=globals.mask_engine,
+        new_clip_text=globals.clip_text,
         use_new_method=True,
         imagemask=None,
         restore_original_mouth=False,

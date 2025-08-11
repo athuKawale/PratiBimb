@@ -1,10 +1,6 @@
-import threading
 from typing import Any
 import insightface
-
-import roop.globals
-from roop.typing import Frame, Face
-
+from roop.typing import Frame
 import cv2
 import numpy as np
 from skimage import transform as trans
@@ -12,21 +8,18 @@ from roop.capturer import get_video_frame
 from roop.utilities import resolve_relative_path, conditional_thread_semaphore
 
 FACE_ANALYSER = None
-#THREAD_LOCK_ANALYSER = threading.Lock()
-#THREAD_LOCK_SWAPPER = threading.Lock()
 FACE_SWAPPER = None
 
-
-def get_face_analyser() -> Any:
+def get_face_analyser(globals) -> Any:
     global FACE_ANALYSER
 
     with conditional_thread_semaphore():
-        if FACE_ANALYSER is None or roop.globals.g_current_face_analysis != roop.globals.g_desired_face_analysis:
+        if FACE_ANALYSER is None or globals.g_current_face_analysis != globals.g_desired_face_analysis:
             model_path = resolve_relative_path('..')
             # removed genderage
-            allowed_modules = roop.globals.g_desired_face_analysis
-            roop.globals.g_current_face_analysis = roop.globals.g_desired_face_analysis
-            if 'CPUExecutionProvider' in roop.globals.execution_providers:
+            allowed_modules = globals.g_desired_face_analysis
+            globals.g_current_face_analysis = globals.g_desired_face_analysis
+            if 'CPUExecutionProvider' in globals.execution_providers:
                 print("Forcing CPU for Face Analysis")
                 FACE_ANALYSER = insightface.app.FaceAnalysis(
                     name="buffalo_l",
@@ -34,33 +27,33 @@ def get_face_analyser() -> Any:
                 )
             else:
                 FACE_ANALYSER = insightface.app.FaceAnalysis(
-                    name="buffalo_l", root=model_path, providers=roop.globals.execution_providers,allowed_modules=allowed_modules
+                    name="buffalo_l", root=model_path, providers=globals.execution_providers,allowed_modules=allowed_modules
                 )
             FACE_ANALYSER.prepare(
                 ctx_id=0,
-                det_size=(640, 640) if roop.globals.default_det_size else (320, 320),
+                det_size=(640, 640) if globals.default_det_size else (320, 320),
             )
     return FACE_ANALYSER
 
 
-def get_first_face(frame: Frame) -> Any:
+def get_first_face(globals, frame: Frame) -> Any:
     try:
-        faces = get_face_analyser().get(frame)
+        faces = get_face_analyser(globals).get(frame)
         return min(faces, key=lambda x: x.bbox[0])
     #   return sorted(faces, reverse=True, key=lambda x: (x.bbox[2] - x.bbox[0]) * (x.bbox[3] - x.bbox[1]))[0]
     except:
         return None
 
 
-def get_all_faces(frame: Frame) -> Any:
+def get_all_faces(globals, frame: Frame) -> Any:
     try:
-        faces = get_face_analyser().get(frame)
+        faces = get_face_analyser(globals).get(frame)
         return sorted(faces, key=lambda x: x.bbox[0])
     except:
         return None
 
 
-def extract_face_images(source_filename, video_info, extra_padding=-1.0):
+def extract_face_images(globals, source_filename, video_info, extra_padding=-1.0):
     face_data = []
     source_image = None
 
@@ -73,7 +66,7 @@ def extract_face_images(source_filename, video_info, extra_padding=-1.0):
     else:
         source_image = cv2.imdecode(np.fromfile(source_filename, dtype=np.uint8), cv2.IMREAD_COLOR)
 
-    faces = get_all_faces(source_image)
+    faces = get_all_faces(globals, source_image)
     if faces is None:
         return face_data
 
@@ -109,7 +102,7 @@ def extract_face_images(source_filename, video_info, extra_padding=-1.0):
                 )
                 face_temp = source_image[startY:endY, startX:endX]
                 face_temp = resize_image_keep_content(face_temp)
-                testfaces = get_all_faces(face_temp)
+                testfaces = get_all_faces(globals, face_temp)
                 if testfaces is not None and len(testfaces) > 0:
                     i += 1
                     face_data.append([testfaces[0], face_temp])
@@ -128,7 +121,6 @@ def extract_face_images(source_filename, video_info, extra_padding=-1.0):
         face_data.append([face, face_temp])
     return face_data
 
-
 def clamp_cut_values(startX, endX, startY, endY, image):
     if startX < 0:
         startX = 0
@@ -140,16 +132,13 @@ def clamp_cut_values(startX, endX, startY, endY, image):
         endY = image.shape[0]
     return startX, endX, startY, endY
 
-
-
-def face_offset_top(face: Face, offset):
+def face_offset_top(face, offset):
     face["bbox"][1] += offset
     face["bbox"][3] += offset
     lm106 = face.landmark_2d_106
     add = np.full_like(lm106, [0, offset])
     face["landmark_2d_106"] = lm106 + add
     return face
-
 
 def resize_image_keep_content(image, new_width=512, new_height=512):
     dim = None
@@ -176,21 +165,17 @@ def resize_image_keep_content(image, new_width=512, new_height=512):
         resize_img[startoffs : new_height - offs, 0:new_width] = image
     return resize_img
 
-
 def rotate_image_90(image, rotate=True):
     if rotate:
         return np.rot90(image)
     else:
         return np.rot90(image, 1, (1, 0))
 
-
 def rotate_anticlockwise(frame):
     return rotate_image_90(frame)
 
-
 def rotate_clockwise(frame):
     return rotate_image_90(frame, False)
-
 
 def rotate_image_180(image):
     return np.flip(image, 0)

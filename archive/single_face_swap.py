@@ -7,7 +7,7 @@ import glob
 # Add project root to path to allow relative imports
 sys.path.append(os.getcwd())
 
-import roop.globals
+from roop.globals import GLOBALS
 from roop.core import batch_process_regular
 from roop.face_util import extract_face_images
 from roop.ProcessEntry import ProcessEntry
@@ -44,15 +44,17 @@ def run():
     output_dir = os.path.dirname(args.output_file)
     os.makedirs(output_dir, exist_ok=True)
     
-    roop.globals.output_path = output_dir
-    if roop.globals.clear_output:
-        util.clean_dir(roop.globals.output_path)
+    globals = GLOBALS()
 
-    roop.globals.source_path = args.source_img
-    roop.globals.target_path = args.target_img
+    globals.output_path = output_dir
+    if globals.clear_output:
+        util.clean_dir(globals.output_path)
+
+    globals.source_path = args.source_img
+    globals.target_path = args.target_img
     
     # Hardcoded globals for single image swap
-    roop.globals.face_swap_mode = "first" # Swap the first detected face
+    globals.face_swap_mode = "first" # Swap the first detected face
 
     # Load source face
     print("Analyzing source image...")
@@ -65,7 +67,7 @@ def run():
     face = source_faces_data[0][0]
     face.mask_offsets = (0,0,0,0,1,20) # Default mask offsets
     face_set.faces.append(face)
-    roop.globals.INPUT_FACESETS.append(face_set)
+    globals.INPUT_FACESETS.append(face_set)
     print(f"Found {len(source_faces_data)} face(s), using the first one.")
 
     # Prepare target file process entry
@@ -73,16 +75,16 @@ def run():
     print(f"Target set to: {args.target_img}")
 
     # Set some more required globals
-    roop.globals.max_memory = roop.globals.memory_limit if roop.globals.memory_limit > 0 else None
+    globals.max_memory = globals.memory_limit if globals.memory_limit > 0 else None
 
     print("Starting face swap process...")
     
     batch_process_regular(
-        swap_model=roop.globals.face_swapper_model,
+        swap_model=globals.face_swapper_model,
         output_method="File",
         files=list_files_process,
-        masking_engine=roop.globals.mask_engine,
-        new_clip_text=roop.globals.clip_text,
+        masking_engine=globals.mask_engine,
+        new_clip_text=globals.clip_text,
         use_new_method=True,
         imagemask=None,
         restore_original_mouth=False,
