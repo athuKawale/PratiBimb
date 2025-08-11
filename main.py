@@ -14,12 +14,13 @@ process_pool = ProcessPoolExecutor()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
+  
     delete_temp_directory()
     
     yield
 
-    process_pool.shutdown(wait=True) 
+    process_pool.shutdown(wait=True)
+    
     delete_temp_directory()
 
 app = FastAPI(
