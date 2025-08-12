@@ -1,0 +1,29 @@
+{
+    "available_video_templates": [
+        {
+            "template_id": "1",
+            "filename": "1.mp4",
+            "template_url": "https://res.cloudinary.com/ddir4923k/video/upload/v1753698552/1_ggq0xp.mp4",
+            "thumbnail_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/VFS/Thumbnails/1.png?AWSAccessKeyId=immersouser&Signature=8%2F9IiOSenflH%2FykAKoz1v2vOXqU%3D&Expires=1753783062"
+        },
+        {
+            "template_id": "2",
+            "filename": "2.mp4",
+            "template_url": "https://res.cloudinary.com/ddir4923k/video/upload/v1753698561/2_cmjnwc.mp4",
+            "thumbnail_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/VFS/Thumbnails/2.png?AWSAccessKeyId=immersouser&Signature=tXGBxMpu5q5fYaY1aAtwQq3wa1g%3D&Expires=1753783062"
+        },
+        {
+            "template_id": "3",
+            "filename": "3.mp4",
+            "template_url": "https://res.cloudinary.com/ddir4923k/video/upload/v1753698577/3_tgkgjy.mp4",
+            "thumbnail_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/VFS/Thumbnails/3.png?AWSAccessKeyId=immersouser&Signature=9Z%2B5x2Dwv3xXUaQ9REEjwslQDOc%3D&Expires=1753783062"
+        },
+        {
+            "template_id": "4",
+            "filename": "4.mp4",
+            "template_url": "https://res.cloudinary.com/ddir4923k/video/upload/v1753698549/4_pnpr7h.mp4",
+            "thumbnail_url": "https://sosnm1.shakticloud.ai:9024/immersobuk01/VFS/Thumbnails/4.png?AWSAccessKeyId=immersouser&Signature=0zQngX%2BcBqh3kcyoIeLnySwx%2Bzw%3D&Expires=1753783062"
+        }
+    ],
+    "count": 4
+}

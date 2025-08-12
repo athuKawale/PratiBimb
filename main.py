@@ -1,50 +1,58 @@
+import os
+import sys
+import uvicorn
+import warnings
+from fastapi import FastAPI
+from routers import faceswap, videoswap
+from contextlib import asynccontextmanager
+from fastapi.staticfiles import StaticFiles
+from metadata import version, title, description
+from roop.utilities import delete_temp_directory
+from concurrent.futures import ProcessPoolExecutor
 
-from fastapi import FastAPI, HTTPException
-from typing import List, Dict, Any
+# single thread doubles cuda performance - needs to be set before torch import
+if any(arg.startswith('--execution-provider') for arg in sys.argv):
+    os.environ['OMP_NUM_THREADS'] = '1'
 
-import json
+warnings.filterwarnings("ignore", message="resource_tracker: There appear to be")
+warnings.filterwarnings('ignore', category=FutureWarning, module='insightface')
+warnings.filterwarnings('ignore', category=UserWarning, module='torchvision')
+
+process_pool = ProcessPoolExecutor()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+  
+    delete_temp_directory()
+    
+    yield
+
+    process_pool.shutdown(wait=True)
+    
+    delete_temp_directory()
 
 app = FastAPI(
-    title="Face Swap API",
-    description="An API for performing face swaps and managing templates.",
-    version="1.0.0"
+    title=title,
+    description=description,
+    version=version,
+    lifespan=lifespan
 )
 
-# Load templates from the JSON file
-with open("static/templates.json", "r") as f:
-    TEMPLATES_DATA = json.load(f)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-@app.get("/templates", response_model=Dict[str, Any])
-async def get_available_templates():
-    """
-    Returns a list of available templates with their IDs, filenames, and pre-signed URLs.
-    """
-    if not TEMPLATES_DATA or not TEMPLATES_DATA["available_templates"]:
-        raise HTTPException(status_code=404, detail="No templates found.")
-    
-    templates = TEMPLATES_DATA.get("available_templates", [])
-    
-    # Create a new list containing dictionaries with only the desired keys
-    filtered_templates = []
-    for template in templates:
-        filtered_templates.append({
-            "template_id": template.get("template_id"),
-            "template_url": template.get("template_url"),
-            "template_filename": template.get("template_filename")
-        })
-    
-    return {"available_templates": filtered_templates}
-
-@app.get("/templates/{template_id}/info", response_model=Dict[str, Any])
-async def get_template_info(template_id: str):
-    """
-    Returns detailed information for a specific template.
-    """
-    for template in TEMPLATES_DATA.get("available_templates", []):
-        if template.get("template_id") == template_id:
-            return template
-    raise HTTPException(status_code=404, detail=f"Template with ID '{template_id}' not found.")
+# Register routers
+app.include_router(faceswap.router)
+app.include_router(videoswap.router)
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    try:
+
+        uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True)
+
+    except Exception as e:
+
+        print("Error \n", e)
+
+        process_pool.shutdown(wait=True)
+
+        print("Process pool shutdown complete. Exiting.")

@@ -2,9 +2,8 @@ import numpy as np
 import cv2
 import onnxruntime
 import roop.globals
-
 from roop.typing import Frame
-from roop.utilities import resolve_relative_path, conditional_thread_semaphore
+from roop.utilities import resolve_relative_path
 
 
 

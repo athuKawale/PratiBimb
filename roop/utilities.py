@@ -19,7 +19,7 @@ import random
 
 from typing import Union, Any
 from contextlib import nullcontext
-
+import roop.globals
 from pathlib import Path
 from typing import List, Any
 from tqdm import tqdm
@@ -27,14 +27,62 @@ from scipy.spatial import distance
 
 import roop.template_parser as template_parser
 
-import roop.globals
-
 TEMP_FILE = "temp.mp4"
 TEMP_DIRECTORY = "temp"
 
 THREAD_SEMAPHORE = threading.Semaphore()
 NULL_CONTEXT  = nullcontext()
 
+def delete_temp_directory():
+    """Delete the TEMP_DIRECTORY and all its contents, and clean static results and video-swap directories."""
+    if os.path.exists(TEMP_DIRECTORY) and os.path.isdir(TEMP_DIRECTORY):
+        shutil.rmtree(TEMP_DIRECTORY)
+        print(f"Deleted temporary directory: {TEMP_DIRECTORY}")
+
+    # Clean static/Face-swap/results and static/Face-swap/Templates
+    results_dir = "static/Face-swap/results"
+    template_dir = "static/Face-swap/Templates"
+    if os.path.exists(results_dir) and os.path.isdir(results_dir):
+        for filename in os.listdir(results_dir):
+            file_path = os.path.join(results_dir, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.remove(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f"Failed to delete {file_path}. Reason: {e}")
+        print(f"Deleted all files in static results directory: {results_dir}")
+
+    if os.path.exists(template_dir) and os.path.isdir(template_dir):
+        for filename in os.listdir(template_dir):
+            file_path = os.path.join(template_dir, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.remove(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f"Failed to delete {file_path}. Reason: {e}")
+        print(f"Deleted all files in static results directory: {template_dir}")
+
+    # Clean static/Video-swap/ except static/Video-swap/Templates
+    video_swap_dir = "static/Video-swap"
+    video_swap_templates_dir = os.path.join(video_swap_dir, "Templates")
+    if os.path.exists(video_swap_dir) and os.path.isdir(video_swap_dir):
+        for filename in os.listdir(video_swap_dir):
+            file_path = os.path.join(video_swap_dir, filename)
+            # Skip the Templates directory
+            if os.path.abspath(file_path) == os.path.abspath(video_swap_templates_dir):
+                continue
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.remove(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f"Failed to delete {file_path}. Reason: {e}")
+        print(f"Deleted all files in static video swap directory: {video_swap_dir}")
 
 # monkey patch ssl for mac
 if platform.system().lower() == "darwin":
@@ -77,25 +125,25 @@ def sort_filenames_ignore_path(filenames):
     ]
 
 
-def sort_rename_frames(path: str):
+def sort_rename_frames(globals, path: str):
     filenames = os.listdir(path)
     filenames.sort()
     for i in range(len(filenames)):
         of = os.path.join(path, filenames[i])
         newidx = i + 1
         new_filename = os.path.join(
-            path, f"{newidx:06d}." + roop.globals.CFG.output_image_format
+            path, f"{newidx:06d}." + globals.output_image_format
         )
         os.rename(of, new_filename)
 
 
-def get_temp_frame_paths(target_path: str) -> List[str]:
+def get_temp_frame_paths(globals, target_path: str) -> List[str]:
     temp_directory_path = get_temp_directory_path(target_path)
     return glob.glob(
         (
             os.path.join(
                 glob.escape(temp_directory_path),
-                f"*.{roop.globals.CFG.output_image_format}",
+                f"*.{globals.output_image_format}",
             )
         )
     )
@@ -132,18 +180,18 @@ def get_destfilename_from_path(
     return os.path.join(destfilepath, f"{fn}{extension}{ext}")
 
 
-def replace_template(file_path: str, index: int = 0) -> str:
+def replace_template(file_path: str, globals : Any, index: int = 0) -> str:
     fn, ext = os.path.splitext(os.path.basename(file_path))
 
     # Remove the "__temp" placeholder that was used as a temporary filename
     fn = fn.replace("__temp", "")
 
-    template = roop.globals.CFG.output_template
+    template = globals.output_template
     replaced_filename = template_parser.parse(
         template, {"index": str(index), "file": fn}
     )
 
-    return os.path.join(roop.globals.output_path, f"{replaced_filename}{ext}")
+    return os.path.join(globals.output_path, f"{replaced_filename}{ext}")
 
 
 def create_temp(target_path: str) -> None:
@@ -159,10 +207,10 @@ def move_temp(target_path: str, output_path: str) -> None:
         shutil.move(temp_output_path, output_path)
 
 
-def clean_temp(target_path: str) -> None:
+def clean_temp(globals, target_path: str) -> None:
     temp_directory_path = get_temp_directory_path(target_path)
     parent_directory_path = os.path.dirname(temp_directory_path)
-    if not roop.globals.keep_frames and os.path.isdir(temp_directory_path):
+    if not globals.keep_frames and os.path.isdir(temp_directory_path):
         shutil.rmtree(temp_directory_path)
     if os.path.exists(parent_directory_path) and not os.listdir(parent_directory_path):
         os.rmdir(parent_directory_path)
@@ -232,7 +280,7 @@ def resolve_relative_path(path: str) -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), path))
 
 
-def get_device() -> str:
+def get_device(globals) -> str:
     if len(roop.globals.execution_providers) < 1:
         roop.globals.execution_providers = ["CPUExecutionProvider"]
 
@@ -373,7 +421,7 @@ def clean_dir(path: str):
             print(e)
             
 
-def conditional_thread_semaphore() -> Union[Any, Any]:
+def conditional_thread_semaphore(globals) -> Union[Any, Any]:
     if 'DmlExecutionProvider' in roop.globals.execution_providers or 'ROCMExecutionProvider' in roop.globals.execution_providers:
         return THREAD_SEMAPHORE
     return NULL_CONTEXT

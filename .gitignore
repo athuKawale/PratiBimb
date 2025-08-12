@@ -8,9 +8,9 @@ __pycache__
 /env
 .vscode
 output
-temp
 config.yaml
 run.bat
 venv
 start.sh
 .claude
+abc.json
