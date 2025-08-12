@@ -19,7 +19,7 @@ import random
 
 from typing import Union, Any
 from contextlib import nullcontext
-
+import roop.globals
 from pathlib import Path
 from typing import List, Any
 from tqdm import tqdm
@@ -281,10 +281,10 @@ def resolve_relative_path(path: str) -> str:
 
 
 def get_device(globals) -> str:
-    if len(globals.execution_providers) < 1:
-        globals.execution_providers = ["CPUExecutionProvider"]
+    if len(roop.globals.execution_providers) < 1:
+        roop.globals.execution_providers = ["CPUExecutionProvider"]
 
-    prov = globals.execution_providers[0]
+    prov = roop.globals.execution_providers[0]
     if "CoreMLExecutionProvider" in prov:
         return "mps"
     if "CUDAExecutionProvider" in prov or "ROCMExecutionProvider" in prov:
@@ -422,7 +422,7 @@ def clean_dir(path: str):
             
 
 def conditional_thread_semaphore(globals) -> Union[Any, Any]:
-    if 'DmlExecutionProvider' in globals.execution_providers or 'ROCMExecutionProvider' in globals.execution_providers:
+    if 'DmlExecutionProvider' in roop.globals.execution_providers or 'ROCMExecutionProvider' in roop.globals.execution_providers:
         return THREAD_SEMAPHORE
     return NULL_CONTEXT
 

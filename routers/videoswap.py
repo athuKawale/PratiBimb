@@ -262,9 +262,12 @@ async def faceswap(request: Request, generation_id : str):
         json_data = await request.json()
         group_ids = json_data.get("group_ids", [])
         
+        if len(group_ids) != GENERATION_DATA[generation_id]["faces_to_swap"]:
+
+            raise HTTPException(status_code=400, detail=f"Uploaded {GENERATION_DATA[generation_id]['faces_to_swap']} faces and group_ids only has {len(group_ids)} faces.")
         # Launch face swap in background
         loop = asyncio.get_running_loop()
-        loop.run_in_executor(None, run_video_swap_background, group_ids, generation_id)
+        loop.run_in_executor(None, run_video_swap_background, GENERATION_DATA, OUTPUT_DIR, group_ids, generation_id)
 
         GENERATION_DATA[generation_id]["created_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 

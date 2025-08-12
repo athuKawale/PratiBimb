@@ -6,6 +6,7 @@ import numpy as np
 from skimage import transform as trans
 from roop.capturer import get_video_frame
 from roop.utilities import resolve_relative_path, conditional_thread_semaphore
+import roop.globals
 
 FACE_ANALYSER = None
 FACE_SWAPPER = None
@@ -13,13 +14,13 @@ FACE_SWAPPER = None
 def get_face_analyser(globals) -> Any:
     global FACE_ANALYSER
 
-    with conditional_thread_semaphore():
+    with conditional_thread_semaphore(globals):
         if FACE_ANALYSER is None or globals.g_current_face_analysis != globals.g_desired_face_analysis:
             model_path = resolve_relative_path('..')
             # removed genderage
             allowed_modules = globals.g_desired_face_analysis
             globals.g_current_face_analysis = globals.g_desired_face_analysis
-            if 'CPUExecutionProvider' in globals.execution_providers:
+            if 'CPUExecutionProvider' in roop.globals.execution_providers:
                 print("Forcing CPU for Face Analysis")
                 FACE_ANALYSER = insightface.app.FaceAnalysis(
                     name="buffalo_l",
@@ -27,7 +28,7 @@ def get_face_analyser(globals) -> Any:
                 )
             else:
                 FACE_ANALYSER = insightface.app.FaceAnalysis(
-                    name="buffalo_l", root=model_path, providers=globals.execution_providers,allowed_modules=allowed_modules
+                    name="buffalo_l", root=model_path, providers=roop.globals.execution_providers,allowed_modules=allowed_modules
                 )
             FACE_ANALYSER.prepare(
                 ctx_id=0,
@@ -39,7 +40,7 @@ def get_face_analyser(globals) -> Any:
 def get_first_face(globals, frame: Frame) -> Any:
     try:
         faces = get_face_analyser(globals).get(frame)
-        return min(faces, key=lambda x: x.bbox[0])
+        return min(faces, key=lambda x: x.bbox[0]) 
     #   return sorted(faces, reverse=True, key=lambda x: (x.bbox[2] - x.bbox[0]) * (x.bbox[3] - x.bbox[1]))[0]
     except:
         return None

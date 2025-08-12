@@ -4,7 +4,6 @@ import onnxruntime
 import roop.globals
 from roop.typing import Frame
 from roop.utilities import resolve_relative_path
-from roop.typing import Frame
 
 class Frame_Colorizer():
     plugin_options:dict = None

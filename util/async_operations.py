@@ -1,7 +1,7 @@
 import os
 import glob
 import asyncio
-import datetime
+from datetime import datetime
 from fastapi import HTTPException
 from roop.globals import BASE_URL
 from schema import SwapFaceRequest

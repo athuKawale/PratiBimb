@@ -112,11 +112,11 @@ class ProcessMgr():
         self.last_swapped_frame = None
         self.options = options
         self.globals = globals
-        devicename = get_device()
+        devicename = get_device(globals)
 
-        globals.g_desired_face_analysis=["landmark_3d_68", "landmark_2d_106","detection","recognition"]
+        self.globals.g_desired_face_analysis=["landmark_3d_68", "landmark_2d_106","detection","recognition"]
         if options.swap_mode == "all_female" or options.swap_mode == "all_male":
-            globals.g_desired_face_analysis.append("genderage")
+            self.globals.g_desired_face_analysis.append("genderage")
         elif options.swap_mode == "all_random":
             # don't modify original list
             self.input_face_datas = input_faces.copy()
@@ -196,7 +196,7 @@ class ProcessMgr():
 
     def process_frames(self, source_files: List[str], target_files: List[str], current_files, update: Callable[[], None]) -> None:
         for f in current_files:
-            if not globals.processing:
+            if not self.globals.processing:
                 return
             
             # Decode the byte array into an OpenCV image
@@ -211,7 +211,7 @@ class ProcessMgr():
                 if resimg is not None:
                     i = source_files.index(f)
                     # Also let numpy write the file to support utf-8/16 filenames
-                    cv2.imencode(f'.{globals.output_image_format}',resimg)[1].tofile(target_files[i])
+                    cv2.imencode(f'.{self.globals.output_image_format}',resimg)[1].tofile(target_files[i])
             if update:
                 update()
 
@@ -223,7 +223,7 @@ class ProcessMgr():
         if frame_start > 0:
             cap.set(cv2.CAP_PROP_POS_FRAMES,frame_start)
 
-        while True and globals.processing:
+        while True and self.globals.processing:
             ret, frame = cap.read()
             if not ret:
                 break
@@ -312,7 +312,7 @@ class ProcessMgr():
         self.output_to_cam = output_method == "Virtual Camera" or output_method == "Both"
 
         if self.output_to_file:
-            self.videowriter = FFMPEG_VideoWriter(target_video, (width, height), fps, codec=globals.video_encoder, crf=globals.video_quality, audiofile=None)
+            self.videowriter = FFMPEG_VideoWriter(target_video, (width, height), fps, codec=self.globals.video_encoder, crf=self.globals.video_quality, audiofile=None)
         if self.output_to_cam:
             self.streamwriter = StreamWriter((width, height), int(fps))
 
@@ -367,21 +367,21 @@ class ProcessMgr():
         temp_frame = frame.copy()
         num_swapped, temp_frame = self.swap_faces(frame, temp_frame)
         if num_swapped > 0:
-            if globals.no_face_action == eNoFaceAction.SKIP_FRAME_IF_DISSIMILAR:
+            if self.globals.no_face_action == eNoFaceAction.SKIP_FRAME_IF_DISSIMILAR:
                 if len(self.input_face_datas) > num_swapped:
                     return None
             self.num_frames_no_face = 0
             self.last_swapped_frame = temp_frame.copy()
             return temp_frame
-        if globals.no_face_action == eNoFaceAction.USE_LAST_SWAPPED:
+        if self.globals.no_face_action == eNoFaceAction.USE_LAST_SWAPPED:
             if self.last_swapped_frame is not None and self.num_frames_no_face < self.options.max_num_reuse_frame:
                 self.num_frames_no_face += 1
                 return self.last_swapped_frame.copy()
             return frame
 
-        elif globals.no_face_action == eNoFaceAction.USE_ORIGINAL_FRAME:
+        elif self.globals.no_face_action == eNoFaceAction.USE_ORIGINAL_FRAME:
             return frame
-        if globals.no_face_action == eNoFaceAction.SKIP_FRAME:
+        if self.globals.no_face_action == eNoFaceAction.SKIP_FRAME:
             #This only works with in-mem processing, as it simply skips the frame.
             #For 'extract frames' it simply leaves the unprocessed frame unprocessed and it gets used in the final output by ffmpeg.
             #If we could delete that frame here, that'd work but that might cause ffmpeg to fail unless the frames are renamed, and I don't think we have the info on what frame it actually is?????
@@ -413,7 +413,7 @@ class ProcessMgr():
         num_faces_found = 0
 
         if self.options.swap_mode == "first":
-            face = get_first_face(frame)
+            face = get_first_face(self.globals, frame)
 
             if face is None:
                 return num_faces_found, frame
@@ -423,7 +423,7 @@ class ProcessMgr():
             del face
 
         else:
-            faces = get_all_faces(frame)
+            faces = get_all_faces(self.globals, frame)
             if faces is None:
                 return num_faces_found, frame
             
@@ -452,7 +452,7 @@ class ProcessMgr():
                                 else:
                                     temp_frame = self.process_face(i, face, temp_frame)
                                 num_faces_found += 1
-                            if not globals.vr_mode and num_faces_found == num_targetfaces:
+                            if not self.globals.vr_mode and num_faces_found == num_targetfaces:
                                 break
             elif self.options.swap_mode == "all_female" or self.options.swap_mode == "all_male":
                 gender = 'F' if self.options.swap_mode == "all_female" else 'M'
@@ -468,7 +468,7 @@ class ProcessMgr():
 
 
 
-        if globals.vr_mode and num_faces_found % 2 > 0:
+        if self.globals.vr_mode and num_faces_found % 2 > 0:
             # stereo image, there has to be an even number of faces
             num_faces_found = 0
             return num_faces_found, frame
@@ -556,7 +556,7 @@ class ProcessMgr():
             inputface = None
 
         rotation_action = None
-        if globals.autorotate_faces:
+        if self.globals.autorotate_faces:
             # check for sideways rotation of face
             rotation_action = self.rotation_action(target_face, frame)
             if rotation_action is not None:
@@ -570,7 +570,7 @@ class ProcessMgr():
                 elif rotation_action == "rotate_clockwise":
                     rotcutframe = rotate_clockwise(rotcutframe)
                 # rotate image and re-detect face to correct wonky landmarks
-                rotface = get_first_face(rotcutframe)
+                rotface = get_first_face(self.globals, rotcutframe)
                 if rotface is None:
                     rotation_action = None
                 else:

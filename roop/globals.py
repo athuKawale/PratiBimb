@@ -20,7 +20,7 @@ from roop.core import limit_resources, release_resources
 # Server settings
 BASE_URL = "http://localhost:8002"
 DATA_FILE = "data.json"
-execution_providers: List[str] = ['CPUExecutionProvider']
+execution_providers: List[str] = ['CUDAExecutionProvider', 'CPUExecutionProvider']
 
 class GLOBALS :
 
@@ -64,7 +64,8 @@ class GLOBALS :
         self.max_memory = None
         self.memory_limit = 0
         self.execution_threads = 4
-
+        self.cuda_device_id = 0
+        
         # Miscellaneous processing options
         self.mask_engine : str = 'None'
         self.clip_text : str = None
@@ -75,6 +76,8 @@ class GLOBALS :
         self.clear_output = True
         self.log_level = 'error'
         self.process_mgr = None
+        self.default_det_size = True
+
 
         # Globals for face analysis (used internally)
         self.g_current_face_analysis = None
@@ -130,12 +133,11 @@ class GLOBALS :
                 import resource
                 resource.setrlimit(resource.RLIMIT_DATA, (memory, memory))
 
-    def release_resources() -> None:
-        global process_mgr
+    def release_resources(self) -> None:
 
-        if process_mgr is not None:
-            process_mgr.release_resources()
-            process_mgr = None
+        if self.process_mgr is not None:
+            self.process_mgr.release_resources()
+            self.process_mgr = None
 
         gc.collect()
 
@@ -170,7 +172,7 @@ class GLOBALS :
 
         return True
 
-    def update_status(message: str) -> None:
+    def update_status(self, message: str) -> None:
         print(message)
 
     def get_processing_plugins(self, masking_engine):
@@ -191,16 +193,15 @@ class GLOBALS :
         return processors
 
     def live_swap(self, frame, options):
-        global process_mgr
 
         if frame is None:
             return frame
 
-        if process_mgr is None:
-            process_mgr = ProcessMgr(None)
+        if self.process_mgr is None:
+            self.process_mgr = ProcessMgr(None)
 
-        process_mgr.initialize(self.INPUT_FACESETS, self.TARGET_FACES, options)
-        newframe = process_mgr.process_frame(frame)
+        self.process_mgr.initialize(self.INPUT_FACESETS, self.TARGET_FACES, options)
+        newframe = self.process_mgr.process_frame(frame)
         if newframe is None:
             return frame
         return newframe
@@ -208,25 +209,25 @@ class GLOBALS :
     def batch_process_regular(self, swap_model, output_method, files:list[ProcessEntry], masking_engine:str, new_clip_text:str, use_new_method, imagemask, restore_original_mouth, num_swap_steps, progress, selected_index = 0) -> None:
 
         release_resources()
-        limit_resources()
-        if process_mgr is None:
-            process_mgr = ProcessMgr(progress)
+        limit_resources(self)
+        if self.process_mgr is None:
+            self.process_mgr = ProcessMgr(progress)
         mask = imagemask["layers"][0] if imagemask is not None else None
         if len(self.INPUT_FACESETS) <= selected_index:
             selected_index = 0
         options = ProcessOptions(swap_model, self.get_processing_plugins(masking_engine), self.distance_threshold, self.blend_ratio,
                                 self.face_swap_mode, selected_index, new_clip_text, mask, num_swap_steps,
                                 self.subsample_size, False, restore_original_mouth)
-        process_mgr.initialize(self, self.INPUT_FACESETS, self.TARGET_FACES, options)
+        self.process_mgr.initialize(self, self.INPUT_FACESETS, self.TARGET_FACES, options)
         self.batch_process(output_method, files, use_new_method)
         return
 
     def batch_process_with_options(self, files:list[ProcessEntry], options, progress):
         release_resources()
         limit_resources()
-        if process_mgr is None:
-            process_mgr = ProcessMgr(progress)
-        process_mgr.initialize(self, self.INPUT_FACESETS, self.TARGET_FACES, options)
+        if self.process_mgr is None:
+            self.process_mgr = ProcessMgr(progress)
+        self.process_mgr.initialize(self, self.INPUT_FACESETS, self.TARGET_FACES, options)
         self.batch_process("Files", files, True)
 
     def batch_process(self, output_method, files:list[ProcessEntry], use_new_method) -> None:
@@ -268,7 +269,7 @@ class GLOBALS :
                 origimages.append(f.filename)
                 fakeimages.append(f.finalname)
 
-            process_mgr.run_batch(origimages, fakeimages, self.execution_threads)
+            self.process_mgr.run_batch(origimages, fakeimages, self.execution_threads)
             origimages.clear()
             fakeimages.clear()
 
@@ -295,7 +296,7 @@ class GLOBALS :
                         return
 
                     temp_frame_paths = util.get_temp_frame_paths(self, v.filename)
-                    process_mgr.run_batch(temp_frame_paths, temp_frame_paths, self.execution_threads)
+                    self.process_mgr.run_batch(temp_frame_paths, temp_frame_paths, self.execution_threads)
                     if not self.processing:
                         self.end_processing('Processing stopped!')
                         return
@@ -314,7 +315,7 @@ class GLOBALS :
                         skip_audio = True
                     else:
                         skip_audio = self.skip_audio
-                    process_mgr.run_batch_inmem(output_method, v.filename, v.finalname, v.startframe, v.endframe, fps,self.execution_threads)
+                    self.process_mgr.run_batch_inmem(output_method, v.filename, v.finalname, v.startframe, v.endframe, fps,self.execution_threads)
                     
                 if not self.processing:
                     self.end_processing('Processing stopped!')
@@ -334,11 +335,11 @@ class GLOBALS :
                             os.remove(video_file_name)
                     else:
                         skip_audio = self.skip_audio
-                        destination = util.replace_template(video_file_name, index=index)
+                        destination = util.replace_template(video_file_name, self, index=index)
                         pathlib.Path(os.path.dirname(destination)).mkdir(parents=True, exist_ok=True)
 
                         if not skip_audio:
-                            ffmpeg.restore_audio(video_file_name, v.filename, v.startframe, v.endframe, destination)
+                            ffmpeg.restore_audio(self, video_file_name, v.filename, v.startframe, v.endframe, destination)
                             if os.path.isfile(destination):
                                 os.remove(video_file_name)
                         else:

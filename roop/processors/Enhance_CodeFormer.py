@@ -2,9 +2,7 @@ import cv2
 import numpy as np
 import onnxruntime
 import roop.globals
-from roop.FaceSet import FaceSet
-from insightface.app.common import Face
-from roop.typing import Frame
+from roop.typing import Frame, FaceSet, Face
 from roop.utilities import resolve_relative_path
 
 class Enhance_CodeFormer():

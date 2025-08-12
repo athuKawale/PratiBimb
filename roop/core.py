@@ -6,7 +6,7 @@ import shutil
 # single thread doubles cuda performance - needs to be set before torch import
 if any(arg.startswith('--execution-provider') for arg in sys.argv):
     os.environ['OMP_NUM_THREADS'] = '1'
-
+import roop.globals
 import warnings
 from typing import List
 import platform
@@ -61,9 +61,9 @@ def suggest_execution_providers() -> List[str]:
     return encode_execution_providers(onnxruntime.get_available_providers())
 
 def suggest_execution_threads(globals) -> int:
-    if 'DmlExecutionProvider' in globals.execution_providers:
+    if 'DmlExecutionProvider' in roop.globals.execution_providers:
         return 1
-    if 'ROCMExecutionProvider' in globals.execution_providers:
+    if 'ROCMExecutionProvider' in roop.globals.execution_providers:
         return 1
     return 8
 
@@ -330,7 +330,7 @@ def destroy(globals) -> None:
 
 def run(globals) -> None:
     signal.signal(signal.SIGINT, lambda signal_number, frame: destroy())
-    if 'ROCMExecutionProvider' in globals.execution_providers:
+    if 'ROCMExecutionProvider' in roop.globals.execution_providers:
         del torch
     if not pre_check():
         return
