@@ -1,198 +1,34 @@
 import os
-import re
 import cv2
 import uuid
-import glob
 import json
 import asyncio
-import logging
+import traceback
+from roop.globals import GLOBALS
 from datetime import datetime
 from roop.FaceSet import FaceSet
 from roop.globals import BASE_URL
 from roop import utilities as util
-from roop import globals as roop_globals
-from roop.ProcessEntry import ProcessEntry
-from roop.core import batch_process_regular
 from roop.face_util import extract_face_images
-from roop.capturer import get_video_frame_total
-from contextlib import redirect_stderr, redirect_stdout
+from util.logger import extract_last_percentage
+from util.async_operations import run_video_swap_background
 from fastapi import APIRouter, File, Form, Request, UploadFile, HTTPException
+
+"""Globals"""
 
 router = APIRouter(
     prefix="/videoswap",
     tags=["videoswap"]
 )
 
-"""Constants and global variables for video swap operations"""
-
 OUTPUT_DIR = "static/Video-swap"
-TEMPLATES_DIR = "static/Video-swap/Templates"
 
-with open("static/video_templates.json", "r") as f:
-    TEMPLATES_DATA = json.load(f)
+TEMPLATES_DIR = "static/Video-swap/Templates"
 
 GENERATION_DATA = {}
 
-"""Setup logging for face swap operations"""
-
-# Dictionary to store loggers per generation_id
-loggers = {}
-
-def get_logger_for_generation(generation_id: str) -> logging.Logger:
-    if generation_id in loggers:
-        return loggers[generation_id]
-
-    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
-    os.makedirs(generation_dir, exist_ok=True)
-    log_file_path = os.path.join(generation_dir, "faceswap.log")
-
-    logger = logging.getLogger(f"faceswap_{generation_id}")
-    logger.setLevel(logging.INFO)
-
-    # Clear existing handlers for this logger to avoid duplicates
-    if logger.hasHandlers():
-        logger.handlers.clear()
-
-    file_handler = logging.FileHandler(log_file_path, mode='w')
-    formatter = logging.Formatter('%(asctime)s - %(message)s')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-
-    loggers[generation_id] = logger
-    return logger
-
-def log_and_print(generation_id: str, msg: str):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(timestamp, msg)
-    logger = get_logger_for_generation(generation_id)
-    logger.info(msg)
-
-def extract_last_percentage(log_file: str) -> float:
-    if not os.path.exists(log_file):
-        print("file not found:", log_file)
-        return 0.0
-
-    with open(log_file, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-
-    percent = 0.0
-    pattern = re.compile(r'Processing:\s+(\d{1,3})%')
-
-    for line in reversed(lines):
-        match = pattern.search(line)
-        if match:
-            percent = float(match.group(1))
-            break
-
-    return percent
-
-"""Run face swap in background using asyncio"""
-
-def run_video_swap_background(group_ids, generation_id):
-    asyncio.run(run_video_swap(group_ids, generation_id))
-
-async def run_video_swap(group_ids: list, generation_id: str):
-
-    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
-        
-    log_file_path = os.path.join(generation_dir, "faceswap.log")
-
-    log_and_print(generation_id, "Starting face swap process...")  
-
-    Template = GENERATION_DATA[generation_id]["templatePath"]
-
-    for i in group_ids:
-
-        roop_globals.INPUT_FACESETS = [roop_globals.VIDEO_INPUTFACES[i]]
-
-        if len(roop_globals.TARGET_FACES[0].faces) > 1 :
-            # Move Embedding of faces to faces[0]  and setting faces embedding to None so that averageEmbeddings can be calculated.
-            roop_globals.TARGET_FACES[0].faces[0].embedding = roop_globals.TARGET_FACES[0].embedding
-            roop_globals.TARGET_FACES[0].embedding = None
-
-            # getting i-th target face at front of list so that it is swapped
-            temp = roop_globals.TARGET_FACES[0].faces[0]
-            roop_globals.TARGET_FACES[0].faces[0] = roop_globals.TARGET_FACES[0].faces[i]
-            roop_globals.TARGET_FACES[0].faces[i] = temp
-
-            roop_globals.TARGET_FACES[0].AverageEmbeddings()
-
-        # Prepare target file process entry
-        list_files_process = []
-        process_entry = ProcessEntry(Template, 0, 0, 0)
-        total_frames = get_video_frame_total(Template)
-
-        if total_frames is None or total_frames < 1:
-            print(f"Warning: Could not read total frames from video {Template}")
-            total_frames = 1
-
-        process_entry.endframe = total_frames
-        list_files_process.append(process_entry)
-
-        #This clears the log file
-        with open(log_file_path, 'w'):
-            pass
-
-        try :
-
-            with open(log_file_path, 'a') as f:
-                with redirect_stdout(f), redirect_stderr(f):
-                    batch_process_regular(
-                        swap_model=roop_globals.face_swapper_model,
-                        output_method="File", 
-                        files=list_files_process,
-                        masking_engine=roop_globals.mask_engine,
-                        new_clip_text=roop_globals.clip_text,
-                        use_new_method=True,
-                        imagemask=None,
-                        restore_original_mouth=False,
-                        num_swap_steps=1,
-                        progress=None,
-                        selected_index=0
-                    )
-
-        except Exception as e:
-            print(f"Error during face swap processing: {e}\nIteration: {GENERATION_DATA[generation_id]['iteration']}\n")
-            
-            GENERATION_DATA[generation_id]["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-            GENERATION_DATA[generation_id]["status"] = "error"
-
-            GENERATION_DATA[generation_id]["details"] = f"Faceswap Failed : \n{e}"
-
-            log_and_print(generation_id, f"Face swap failed: {e}")
-
-            roop_globals.INPUT_FACESETS = []
-            roop_globals.TARGET_FACES = []
-            roop_globals.VIDEO_INPUTFACES = []
-
-            return
-        
-        GENERATION_DATA[generation_id]["iteration"] = GENERATION_DATA[generation_id]["iteration"] + 1
-        
-        if os.path.exists(os.path.join(roop_globals.output_path, 'output.mp4')):
-            os.remove(os.path.join(roop_globals.output_path, 'output.mp4'))
-
-        Template = glob.glob(os.path.join(roop_globals.output_path, '*.mp4'))[0]
-
-        if not Template:
-            print("Error: No output file created during processing.")
-            return
-        
-        os.rename(Template, os.path.join(roop_globals.output_path, "output.mp4"))
-        Template = os.path.join(roop_globals.output_path, "output.mp4")
-
-    roop_globals.INPUT_FACESETS = []
-    roop_globals.TARGET_FACES = []
-    roop_globals.VIDEO_INPUTFACES = []
-
-    GENERATION_DATA[generation_id]["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    GENERATION_DATA[generation_id]["status"] = "finished"
-
-    GENERATION_DATA[generation_id]["iteration"] = 0
-
-    print(f"[{GENERATION_DATA[generation_id]['finished_at']}] Face swap completed.")
+with open("static/video_templates.json", "r") as f:
+    TEMPLATES_DATA = json.load(f)
 
 """API ENDPOINTS"""
 
@@ -214,6 +50,9 @@ async def get_video_templates():
     """
     Returns a list of available video templates.
     """
+    if TEMPLATES_DATA is None:
+        raise HTTPException(status_code=500, detail="No Template Data found.")
+    
     return TEMPLATES_DATA
 
 @router.get("/templates/{template_id}/info")
@@ -221,8 +60,15 @@ async def get_template_info(template_id: str):
     """
     Returns detailed information for a specific video template.
     """
-    template = next((t for t in TEMPLATES_DATA["available_video_templates"] if t["template_id"] == template_id), None)
+    try :
+
+        template = next((t for t in TEMPLATES_DATA["available_video_templates"] if t["template_id"] == template_id), None)
     
+    except Exception as e:
+        tb_str = traceback.format_exc()
+        print("\nProblem in /templates/{template_id}/info endpoint:\n", tb_str)
+        raise HTTPException(status_code=500, detail=f"Internal server error occurred.\n{e}")
+
     return template
 
 @router.post("/uploadvideo")
@@ -231,117 +77,118 @@ async def upload_video(user_id: str = Form(...), template_id: str = Form(...)):
     Endpoint to upload a video for face swapping.
     """
 
-    
-    generation_id = f"{uuid.uuid4()}"
-
-    GENERATION_DATA[generation_id] =  {
-        "outputDir": OUTPUT_DIR,
-        "generationId": "",
-        "userId": "",
-        "groupId": "",
-        "templateId": "",
-        "templatePath": "",
-        "face_groups_detected" : {},
-        "detected_faces_urls": {},
-        "total_face_groups": 0,
-        "faces_to_swap": 1,
-        "thumbnail_url": "",
-        "created_at": "",
-        "finished_at": "",
-        "iteration": 0,
-        "status": "processing",
-    }
-    GENERATION_DATA[generation_id]["userId"] = user_id
-    GENERATION_DATA[generation_id]["outputDir"] = f"{OUTPUT_DIR}/{generation_id}"
-    GENERATION_DATA[generation_id]["templatePath"] = TEMPLATES_DIR + "/" + template_id + ".mp4"
-
-    roop_globals.output_path = OUTPUT_DIR + "/" + generation_id + "/" + "output"
-
-    os.makedirs(roop_globals.output_path, exist_ok=True)
-    
-    if roop_globals.CFG.clear_output:
-        util.clean_dir(roop_globals.output_path)
-
-    roop_globals.target_path = GENERATION_DATA[generation_id]["templatePath"]
-    roop_globals.distance_threshold = 0.65
-    roop_globals.blend_ratio = 1
-    roop_globals.face_swap_mode = "selected"
-    roop_globals.no_face_action = 0 # Use untouched original frame
-    roop_globals.keep_frames = False
-    roop_globals.wait_after_extraction = False
-    roop_globals.vr_mode = False
-    roop_globals.autorotate_faces = True
-    roop_globals.subsample_size = 128
-    roop_globals.mask_engine = 'None'
-    roop_globals.clip_text = None
-    roop_globals.execution_threads = roop_globals.CFG.max_threads
-    roop_globals.video_encoder = roop_globals.CFG.output_video_codec
-    roop_globals.video_quality = roop_globals.CFG.video_quality
-    roop_globals.max_memory = roop_globals.CFG.memory_limit if roop_globals.CFG.memory_limit > 0 else None
-
-    print("\n\nAnalyzing target video for faces...\n\n")
-
-    target_face_data = extract_face_images(roop_globals.target_path, (True, 0))
-    
-    if not target_face_data:
-        raise HTTPException(
-            status_code=422,
-            detail="No face detected in the image"
-        )
-
-
-    print(f"Found {len(target_face_data)} face(s) in the target video.\n\n")
-
-    print("Creating face set for target video...\n\n")
-
-    face_set = FaceSet()    
-    for face_data in target_face_data:
-        face = face_data[0]
-        face.mask_offsets = (0,0,0,0,1,20)
-        face_set.faces.append(face)
-
-    if len(face_set.faces) > 1:
-         face_set.AverageEmbeddings()
-    
-    if len(face_set.faces) <= 1:
-        roop_globals.face_swap_mode = 'all_input'
+    try : 
         
-    roop_globals.TARGET_FACES.append(face_set)
+        globals = GLOBALS()
+        
+        generation_id = f"{uuid.uuid4()}"
 
-    print(f"Found {len(target_face_data)} face(s)\n\n")
+        GENERATION_DATA[generation_id] =  {
+            "globals" : globals,
+            "outputDir": OUTPUT_DIR,
+            "generationId": "",
+            "userId": "",
+            "groupId": "",
+            "templateId": "",
+            "templatePath": "",
+            "face_groups_detected" : {},
+            "detected_faces_urls": {},
+            "total_face_groups": 0,
+            "faces_to_swap": 1,
+            "thumbnail_url": "",
+            "created_at": "",
+            "finished_at": "",
+            "iteration": 0,
+            "status": "processing",
+        }
 
-    # Save cropped faces for target video
-    for i, (face, face_image) in enumerate(target_face_data):
-        try:
-            face_filename = f"target_{i}_{generation_id}.jpg"
-            face_path = GENERATION_DATA[generation_id]["outputDir"] + "/" + face_filename
-            cv2.imwrite(str(face_path), face_image)
+        generation_data = GENERATION_DATA[generation_id]
 
-            GENERATION_DATA[generation_id]["detected_faces_urls"][i] = f"{BASE_URL}/{face_path}"
+        generation_data["userId"] = user_id
+        generation_data["outputDir"] = f"{OUTPUT_DIR}/{generation_id}"
+        generation_data["templatePath"] = TEMPLATES_DIR + "/" + template_id + ".mp4"
 
-        except Exception as e:
-            print(f"Error saving face {i}: {e}\n\n")
-            continue
+        generation_data["globals"].output_path = OUTPUT_DIR + "/" + generation_id + "/" + "output"
 
-    GENERATION_DATA[generation_id]["status"] = "processing"
-    GENERATION_DATA[generation_id]["templateId"] = template_id
-    GENERATION_DATA[generation_id]["face_groups_detected"] = {
-        "1": 277,
-        "0": 290
-    }
-    GENERATION_DATA[generation_id]["total_face_groups"] = len(GENERATION_DATA[generation_id]["detected_faces_urls"])
+        os.makedirs(generation_data["globals"].output_path, exist_ok=True)
+        
+        if generation_data["globals"].clear_output:
+            util.clean_dir(generation_data["globals"].output_path)
 
-    GENERATION_DATA[generation_id]["thumbnail_url"] = next((t["thumbnail_url"] for t in TEMPLATES_DATA["available_video_templates"] if t["template_id"] == template_id), None)
+        generation_data["globals"].target_path = generation_data["templatePath"]
+        generation_data["globals"].face_swap_mode = "selected"
+        generation_data["globals"].clip_text = None
+        generation_data["globals"].max_memory = generation_data["globals"].memory_limit if generation_data["globals"].memory_limit > 0 else None
+
+        print("\n\nAnalyzing target video for faces...\n\n")
+
+        target_face_data = extract_face_images(generation_data["globals"], generation_data["globals"].target_path, (True, 0))
+        
+        if not target_face_data:
+            raise HTTPException(
+                status_code=422,
+                detail="No face detected in the image"
+            )
+
+
+        print(f"Found {len(target_face_data)} face(s) in the target video.\n\n")
+
+        print("Creating face set for target video...\n\n")
+
+        face_set = FaceSet()    
+        for face_data in target_face_data:
+            face = face_data[0]
+            face.mask_offsets = (0,0,0,0,1,20)
+            face_set.faces.append(face)
+
+        if len(face_set.faces) > 1:
+            face_set.AverageEmbeddings()
+        
+        if len(face_set.faces) <= 1:
+            generation_data["globals"].face_swap_mode = 'all_input'
+            
+        generation_data["globals"].TARGET_FACES.append(face_set)
+
+        print(f"Found {len(target_face_data)} face(s)\n\n")
+
+        # Save cropped faces for target video
+        for i, (face, face_image) in enumerate(target_face_data):
+            try:
+                face_filename = f"target_{i}_{generation_id}.jpg"
+                face_path = generation_data["outputDir"] + "/" + face_filename
+                cv2.imwrite(str(face_path), face_image)
+
+                generation_data["detected_faces_urls"][i] = f"{BASE_URL}/{face_path}"
+
+            except Exception as e:
+                print(f"Error saving face {i}: {e}\n\n")
+                continue
+
+        generation_data["status"] = "processing"
+        generation_data["templateId"] = template_id
+        generation_data["face_groups_detected"] = {
+            "1": 277,
+            "0": 290
+        }
+        generation_data["total_face_groups"] = len(generation_data["detected_faces_urls"])
+
+        generation_data["thumbnail_url"] = next((t["thumbnail_url"] for t in TEMPLATES_DATA["available_video_templates"] if t["template_id"] == template_id), None)
+
+    except Exception as e:
+
+        tb_str = traceback.format_exc()
+        print("\nProblem in /uploadvideo :\n", tb_str)
+        raise HTTPException(status_code=500, detail=f"Internal server error occurred.\n{e}")
     
     return {
         "generation_id": generation_id,
         "template_id": template_id,
-        "face_groups_detected": GENERATION_DATA[generation_id]["face_groups_detected"],
-        "detected_faces_urls": GENERATION_DATA[generation_id]["detected_faces_urls"],
-        "total_face_groups": GENERATION_DATA[generation_id]["total_face_groups"],
-        "status": GENERATION_DATA[generation_id]["status"],
+        "face_groups_detected": generation_data["face_groups_detected"],
+        "detected_faces_urls": generation_data["detected_faces_urls"],
+        "total_face_groups": generation_data["total_face_groups"],
+        "status": generation_data["status"],
         "credits": 50,
-        "thumbnail_url": GENERATION_DATA[generation_id]["thumbnail_url"],
+        "thumbnail_url": generation_data["thumbnail_url"],
     }
 
 @router.post("/uploadnewfaces/{generation_id}/{group_id}")
@@ -349,45 +196,52 @@ async def upload_new_faces(generation_id: str, group_id: str, file : UploadFile 
     """
     Endpoint to upload new faces for a specific generation and group.
     """
-    source_file_name = f"{group_id}_{generation_id}.jpg"
-    os.makedirs(os.path.join(GENERATION_DATA[generation_id]["outputDir"], group_id), exist_ok=True)
-    source_file_path = os.path.join(GENERATION_DATA[generation_id]["outputDir"], group_id,  source_file_name)
+    try :
+            
+        generation_data = GENERATION_DATA[generation_id]
 
-    roop_globals.source_path_video.append(source_file_path)
+        source_file_name = f"{group_id}_{generation_id}.jpg"
+        os.makedirs(os.path.join(generation_data["outputDir"], group_id), exist_ok=True)
+        source_file_path = os.path.join(generation_data["outputDir"], group_id,  source_file_name)
 
-    with open(source_file_path, "wb") as buffer:
-        buffer.write(file.file.read())
+        with open(source_file_path, "wb") as buffer:
+            buffer.write(file.file.read())
 
-    print("Analyzing source image...\n\n")
+        print("Analyzing source image...\n\n")
 
-    source_faces_data = extract_face_images(source_file_path, (False, 0))
-    if not source_faces_data:
-        raise HTTPException(
-            status_code=422,
-            detail="No face detected in the image"
-        )
+        source_faces_data = extract_face_images(generation_data["globals"], source_file_path, (False, 0))
+        if not source_faces_data:
+            raise HTTPException(
+                status_code=422,
+                detail="No face detected in the image"
+            )
 
-    face_set = FaceSet()
-    face = source_faces_data[0][0]
-    face.mask_offsets = (0,0,0,0,1,20)
-    face_set.faces.append(face)
-    roop_globals.VIDEO_INPUTFACES.append(face_set)
+        face_set = FaceSet()
+        face = source_faces_data[0][0]
+        face.mask_offsets = (0,0,0,0,1,20)
+        face_set.faces.append(face)
+        generation_data["globals"].VIDEO_INPUTFACES.append(face_set)
+        
+        # Put total faces to swap in GENERATION DATA
+        generation_data["faces_to_swap"] = len(generation_data["globals"].VIDEO_INPUTFACES)
+
+        print(f"Found {len(source_faces_data)} face(s), using the first one.\n\n")
+
+        # Save cropped faces for source image
+        for i, (face, face_image) in enumerate(source_faces_data):
+            try:
+                face_filename = f"source_{i}_{generation_id}.jpg"
+                face_path = generation_data["outputDir"] + "/" + group_id + "/" + face_filename
+                cv2.imwrite(str(face_path), face_image)
+                print(f"Saved source face {i} to {face_path}\n\n")
+            except Exception as e:
+                print(f"Error saving face {i}: {e}\n\n")
+                continue
     
-    # Put total faces to swap in GENERATION DATA
-    GENERATION_DATA[generation_id]["faces_to_swap"] = len(roop_globals.VIDEO_INPUTFACES)
-
-    print(f"Found {len(source_faces_data)} face(s), using the first one.\n\n")
-
-    # Save cropped faces for source image
-    for i, (face, face_image) in enumerate(source_faces_data):
-        try:
-            face_filename = f"source_{i}_{generation_id}.jpg"
-            face_path = GENERATION_DATA[generation_id]["outputDir"] + "/" + group_id + "/" + face_filename
-            cv2.imwrite(str(face_path), face_image)
-            print(f"Saved source face {i} to {face_path}\n\n")
-        except Exception as e:
-            print(f"Error saving face {i}: {e}\n\n")
-            continue
+    except Exception as e:
+        tb_str = traceback.format_exc()
+        print("\nProblem in /uploadnewfaces endpoint:\n", tb_str)
+        raise HTTPException(status_code=500, detail=f"Internal server error occurred.\n{e}")
     
 
     return {
@@ -403,15 +257,24 @@ async def faceswap(request: Request, generation_id : str):
     """
     Endpoint to perform face swap on the uploaded video.
     """
-    
-    json_data = await request.json()
-    group_ids = json_data.get("group_ids", [])
-    
-    # Launch face swap in background
-    loop = asyncio.get_running_loop()
-    loop.run_in_executor(None, run_video_swap_background, group_ids, generation_id)
+    try :
 
-    GENERATION_DATA[generation_id]["created_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        json_data = await request.json()
+        group_ids = json_data.get("group_ids", [])
+        
+        if len(group_ids) != GENERATION_DATA[generation_id]["faces_to_swap"]:
+
+            raise HTTPException(status_code=400, detail=f"Uploaded {GENERATION_DATA[generation_id]['faces_to_swap']} faces and group_ids only has {len(group_ids)} faces.")
+        # Launch face swap in background
+        loop = asyncio.get_running_loop()
+        loop.run_in_executor(None, run_video_swap_background, GENERATION_DATA, OUTPUT_DIR, group_ids, generation_id)
+
+        GENERATION_DATA[generation_id]["created_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    except Exception as e:
+        tb_str = traceback.format_exc()
+        print("\nProblem in /faceswap/{generation_id} :\n", tb_str)
+        raise HTTPException(status_code=500, detail=f"Internal server error occurred.\n{e}")
 
     return {
         "status": "processing",
@@ -423,45 +286,53 @@ async def faceswap(request: Request, generation_id : str):
 @router.get("/faceswap/status/{generation_id}")
 async def get_swap_status(generation_id: str):
     
-    generation_dir = os.path.join(OUTPUT_DIR, generation_id)
+    try :
+        generation_data = GENERATION_DATA[generation_id]
+            
+        generation_dir = os.path.join(OUTPUT_DIR, generation_id)
 
-    log_file_path = os.path.join(generation_dir, "faceswap.log")
+        log_file_path = os.path.join(generation_dir, "faceswap.log")
 
-    progress = extract_last_percentage(log_file_path)
+        progress = extract_last_percentage(log_file_path)
+    
+    except Exception as e:
+        tb_str = traceback.format_exc()
+        print("\nProblem in /faceswap/status/{generation_id} endpoint:\n", tb_str)
+        raise HTTPException(status_code=500, detail=f"Internal server error occurred.\n{e}")
 
-    if GENERATION_DATA[generation_id]["status"] == "finished" :
+    if generation_data["status"] == "finished" :
         
         return {
             "generation_id": generation_id,
-            "created_at": GENERATION_DATA[generation_id]["created_at"],
-            "finished_at": GENERATION_DATA[generation_id]["finished_at"],
+            "created_at": generation_data["created_at"],
+            "finished_at": generation_data["finished_at"],
             "progress": 100.0,
-            "status": GENERATION_DATA[generation_id]["status"],
+            "status": generation_data["status"],
             "message": "Face swap completed successfully"
         }
     
-    elif GENERATION_DATA[generation_id]["status"] == "error" :
+    elif generation_data["status"] == "error" :
 
         return {
             "generation_id": generation_id,
-            "created_at": GENERATION_DATA[generation_id]["created_at"],
-            "finished_at": GENERATION_DATA[generation_id]["finished_at"],
+            "created_at": generation_data["created_at"],
+            "finished_at": generation_data["finished_at"],
             "progress": None,
-            "status": GENERATION_DATA[generation_id]["status"],
+            "status": generation_data["status"],
             "message": "Error While Swapping Faces."
         }
 
     else:            
         
-        current_progress = GENERATION_DATA[generation_id]["iteration"] *100 + progress
+        current_progress = generation_data["iteration"] *100 + progress
 
-        progress = current_progress/ GENERATION_DATA[generation_id]["faces_to_swap"]
+        progress = current_progress/ generation_data["faces_to_swap"]
             
         return {
             "generation_id": generation_id,
-            "created_at": GENERATION_DATA[generation_id]["created_at"],
+            "created_at": generation_data["created_at"],
             "finished_at": "Currently progressing",
             "progress": progress,
-            "status": GENERATION_DATA[generation_id]["status"],
+            "status": generation_data["status"],
             "message": f"Face swap is {progress}% complete",
         }

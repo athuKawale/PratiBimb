@@ -8,7 +8,6 @@ import requests
 from roop.FaceSet import FaceSet
 from roop.globals import BASE_URL
 from roop.face_util import extract_face_images
-from roop import globals as roop_globals
 
 def process_and_save_target_faces(files: List[UploadFile], file_url : str, user_id: str, generation_id: str, output_dir: str, generation_data : dict):
     target_urls = []
@@ -63,7 +62,7 @@ def process_and_save_target_faces(files: List[UploadFile], file_url : str, user_
         target_urls.append(f"{BASE_URL}/{target_path}")
         signed_target_urls.append(f"{BASE_URL}/{target_path}?dummy_signed_url")
 
-        target_faces_data = extract_face_images(target_path, (False, 0))
+        target_faces_data = extract_face_images(generation_data["globals"], target_path, (False, 0))
         
         if not target_faces_data:
             print(f"No faces detected in the {target_path} image.")
@@ -74,10 +73,10 @@ def process_and_save_target_faces(files: List[UploadFile], file_url : str, user_
             face = face_data[0]
             face.mask_offsets = (0,0,0,0,1,20) # Default mask offsets
             face_set.faces.append(face)
-            roop_globals.TEMP_FACESET.append(face_set)
+            generation_data["globals"].TEMP_FACESET.append(face_set)
         
         # Put total faces to swap in GENERATION DATA
-        generation_data["faces_to_swap"] = len(roop_globals.VIDEO_INPUTFACES)
+        generation_data["faces_to_swap"] = len(generation_data["globals"].VIDEO_INPUTFACES)
 
         print(f"Found {len(target_faces_data)} face(s), in {target_path} applying mask.")
 

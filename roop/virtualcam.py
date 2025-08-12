@@ -1,19 +1,17 @@
 import cv2
-import roop.globals
 import ui.globals
 import pyvirtualcam
 import threading
 import platform
-
+from roop.ProcessOptions import ProcessOptions
+from roop.core import live_swap, get_processing_plugins
 
 cam_active = False
 cam_thread = None
 vcam = None
 
-def virtualcamera(swap_model, streamobs, use_xseg, use_mouthrestore, cam_num,width,height):
-    from roop.ProcessOptions import ProcessOptions
-    from roop.core import live_swap, get_processing_plugins
-
+def virtualcamera(globals, swap_model, streamobs, use_xseg, use_mouthrestore, cam_num,width,height):
+    
     global cam_active
 
     #time.sleep(2)
@@ -44,17 +42,17 @@ def virtualcamera(swap_model, streamobs, use_xseg, use_mouthrestore, cam_num,wid
         print(f'Using {cam.native_fmt}')
     else:
         print(f'Not streaming to virtual camera!')
-    subsample_size = roop.globals.subsample_size
+    subsample_size = globals.subsample_size
 
 
-    options = ProcessOptions(swap_model, get_processing_plugins("mask_xseg" if use_xseg else None), roop.globals.distance_threshold, roop.globals.blend_ratio,
+    options = ProcessOptions(swap_model, get_processing_plugins("mask_xseg" if use_xseg else None), globals.distance_threshold, globals.blend_ratio,
                               "all", 0, None, None, 1, subsample_size, False, use_mouthrestore)
     while cam_active:
         ret, frame = cap.read()
         if not ret:
             break
 
-        if len(roop.globals.INPUT_FACESETS) > 0:
+        if len(globals.INPUT_FACESETS) > 0:
             frame = live_swap(frame, options)
         if cam:
             cam.send(frame)

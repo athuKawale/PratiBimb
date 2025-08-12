@@ -2,8 +2,8 @@ import roop.globals
 import numpy as np
 import onnx
 import onnxruntime
-
-from roop.typing import Face, Frame
+from insightface.app.common import Face
+from roop.typing import Frame
 from roop.utilities import resolve_relative_path
 
 

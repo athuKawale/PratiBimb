@@ -18,7 +18,12 @@ def save_generation_data_to_json(user_id: str, generation_id: str, GENERATION_DA
         data[user_id] = {}
 
     # Use a deep copy of generation data to avoid mutation
-    gen_data = deepcopy(GENERATION_DATA[generation_id])
+    temp_data = {}
+    for k, v in GENERATION_DATA[generation_id].items() :
+        if k != "globals" :
+            temp_data[k] = v
+            
+    gen_data = deepcopy(temp_data)
 
     if generation_id not in data[user_id]:
 

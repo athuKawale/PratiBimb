@@ -2,9 +2,8 @@ import cv2
 import numpy as np
 import onnxruntime
 import roop.globals
-
-from roop.utilities import resolve_relative_path
 from roop.typing import Frame
+from roop.utilities import resolve_relative_path
 
 class Frame_Colorizer():
     plugin_options:dict = None

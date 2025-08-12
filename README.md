@@ -1,10 +1,14 @@
+# Pre-requisite
+1. Ubuntu 24.04
+2. CUDA 12.4 compatible gpu.
+
 # Setup
 ```bash
 conda create -n pratibimb python=3.11 -y
 
 conda activate pratibimb
 
-sh build.sh
+sh environment/build.sh
 ```
 
 # Setup for VM GCP
@@ -22,19 +26,34 @@ gcloud compute config-ssh
 
 3. Connect Your VS code to ssh.
 ```bash
-bash nvidia_drivers.sh
+bash environment/nvidia_drivers.sh
 
 # Your system will reboot so wait for some time. then run following.
 
-bash nvidia_drivers2.sh
+bash environment/nvidia_drivers2.sh
 
-bash anaconda_setup.sh
+bash environment/anaconda_setup.sh
 
 conda create -n pratibimb python=3.11 -y
 
 conda activate pratibimb
 
-bash build_linux.sh
+bash environment/build_linux.sh
+```
+
+# Setup for Docker (Not tested)
+
+1. Run in Sequence.
+
+```bash
+bash environment/nvidia_drivers.sh
+
+# Your system will reboot so wait for some time. then run following.
+
+bash environment/nvidia_drivers2.sh
+
+docker run --gpus all --rm pratibimb-app
+
 ```
 
 # Execution
@@ -93,7 +112,7 @@ These are little helper tools that do useful jobs for us.
 
 These tools are experts at finding and working with faces.
 
-### 🧐 `extract_face_images(path, options)`
+### 🧐 `extract_face_images(globals, path, options)`
 - **What it does:** This is a super smart face finder! You give it a picture or a video, and it finds all the faces in it. It carefully cuts out each face and gives it to you as a small picture.
 - **What you give it:** The address of the picture/video and some settings.
 - **What you get back:** A list of all the faces it found, along with a small picture of each one.
