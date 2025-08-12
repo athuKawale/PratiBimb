@@ -7,8 +7,8 @@ import traceback
 from PIL import Image
 from metadata import version
 from datetime import datetime
+from roop.globals import GLOBALS
 from schema import SwapFaceRequest
-from roop import globals as roop_globals
 from fastapi.responses import JSONResponse
 from typing import List, Dict, Any, Optional
 from roop.globals import BASE_URL, DATA_FILE
@@ -157,7 +157,10 @@ async def upload_template(
             with open(file_path, "wb") as file_object:
                 file_object.write(await files.read())
 
-        roop_globals.target_path = file_path
+
+        globals = GLOBALS()
+
+        globals.target_path = file_path
 
         generation_id = str(uuid.uuid4())
 
@@ -166,7 +169,8 @@ async def upload_template(
             source_path=file_path, 
             generation_id=generation_id,
             template_id=template_id,
-            output_dir=OUTPUT_DIR
+            output_dir=OUTPUT_DIR,
+            globals=globals
         )
         
         if len(detected_face_urls) == 0 :
@@ -176,6 +180,7 @@ async def upload_template(
             )
         
         GENERATION_DATA[generation_id] = {
+            "globals" : globals,
             "user_id" : user_id,
             "template_ids": template_ids,
             "template_path": file_path,

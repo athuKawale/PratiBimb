@@ -112,7 +112,7 @@ These are little helper tools that do useful jobs for us.
 
 These tools are experts at finding and working with faces.
 
-### 🧐 `extract_face_images(path, options)`
+### 🧐 `extract_face_images(globals, path, options)`
 - **What it does:** This is a super smart face finder! You give it a picture or a video, and it finds all the faces in it. It carefully cuts out each face and gives it to you as a small picture.
 - **What you give it:** The address of the picture/video and some settings.
 - **What you get back:** A list of all the faces it found, along with a small picture of each one.

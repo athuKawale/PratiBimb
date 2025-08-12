@@ -1,7 +1,7 @@
 import re
 import os 
 import logging
-import datetime
+from datetime import datetime
 
 """Setup logging for face swap operations"""
 

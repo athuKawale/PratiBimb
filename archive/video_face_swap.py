@@ -6,7 +6,7 @@ import cv2
 # Add project root to path to allow relative imports
 sys.path.append(os.getcwd())
 
-from roop import globals as roop_globals
+from roop.globals import GLOBALS
 from roop.core import batch_process_regular
 from roop.face_util import extract_face_images
 from roop.ProcessEntry import ProcessEntry
@@ -21,15 +21,6 @@ def get_args():
     parser.add_argument('-t', '--target-video', dest='target_video', required=True, help='Path to the target video file.')
     parser.add_argument('-o', '--output-file', dest='output_file', required=True, help='Path for the output video file.')
     
-    # Simplified options from the UI
-    parser.add_argument('--swap-model', dest='swap_model', default='InSwapper 128', choices=["InSwapper 128", "ReSwapper 128", "ReSwapper 256"], help='The face swapping model to use.')
-    parser.add_argument('--enhancer', dest='enhancer', default='None', choices=["None", "Codeformer", "DMDNet", "GFPGAN", "GPEN", "Restoreformer++"], help='Face enhancer to use.')
-    parser.add_argument('--distance_threshold', dest='distance_threshold', type=float, default=0.65, help='Lower values mean more similar faces.')
-    parser.add_argument('--blend-ratio', dest='blend_ratio', type=float, default=0.65, help='How much of the original face to blend in.')
-    parser.add_argument('--skip-audio', dest='skip_audio', action='store_true', help='Skip audio processing for videos.')
-    parser.add_argument('--target-face-index', dest='target_face_index', type=int, default=0,
-                        help='Index of the face in the first frame to track and swap throughout the video.')
-
     return parser.parse_args()
 
 def run():
@@ -51,29 +42,18 @@ def run():
     output_dir = os.path.dirname(args.output_file)
     os.makedirs(output_dir, exist_ok=True)
     
-    roop_globals.output_path = output_dir
-    if roop_globals.CFG.clear_output:
-        util.clean_dir(roop_globals.output_path)
+    globals = GLOBALS()
 
-    roop_globals.source_path = args.source_img
-    roop_globals.target_path = args.target_video
-    roop_globals.skip_audio = args.skip_audio
-    roop_globals.selected_enhancer = args.enhancer
-    roop_globals.distance_threshold = args.distance_threshold
-    roop_globals.blend_ratio = args.blend_ratio
-    roop_globals.face_swap_mode = "selected"
-    roop_globals.no_face_action = 0 # Use untouched original frame
-    roop_globals.keep_frames = False
-    roop_globals.wait_after_extraction = False
-    roop_globals.vr_mode = False
-    roop_globals.autorotate_faces = True
-    roop_globals.subsample_size = 128
-    roop_globals.mask_engine = 'None'
-    roop_globals.clip_text = None
-    roop_globals.execution_threads = roop_globals.CFG.max_threads
-    roop_globals.video_encoder = roop_globals.CFG.output_video_codec
-    roop_globals.video_quality = roop_globals.CFG.video_quality
-    roop_globals.max_memory = roop_globals.CFG.memory_limit if roop_globals.CFG.memory_limit > 0 else None
+    globals.output_path = output_dir
+    if globals.clear_output:
+        util.clean_dir(globals.output_path)
+
+    globals.source_path = args.source_img
+    globals.target_path = args.target_video
+    globals.face_swap_mode = "selected"
+    globals.clip_text = None
+    globals.execution_threads = globals.max_threads
+    globals.max_memory = globals.memory_limit if globals.memory_limit > 0 else None
 
     # Load source face (for swapping)
     print("Analyzing source image...")
@@ -86,7 +66,7 @@ def run():
     face = source_faces_data[0][0]
     face.mask_offsets = (0,0,0,0,1,20)
     face_set.faces.append(face)
-    roop_globals.INPUT_FACESETS.append(face_set)
+    globals.INPUT_FACESETS.append(face_set)
     print(f"Found {len(source_faces_data)} face(s), using the first one.")
 
     target_face_data = extract_face_images(args.target_video, (True, 0))
@@ -99,11 +79,7 @@ def run():
         face = face_data[0]
         face.mask_offsets = (0,0,0,0,1,20)
         face_set.faces.append(face)
-        roop_globals.TARGET_FACES.append(face_set)
-
-    temp = face_set.faces[0]
-    face_set.faces[0] = face_set.faces[args.target_face_index]
-    face_set.faces[args.target_face_index] = temp
+        globals.TARGET_FACES.append(face_set)
     
     face_set.AverageEmbeddings()
     print(f"Found {len(target_face_data)} face(s), using the first one.")
@@ -147,11 +123,11 @@ def run():
     print("Starting face swap process...")
     
     batch_process_regular(
-        swap_model=args.swap_model,
+        swap_model=globals.face_swapper_model,
         output_method="File", # "File", "Virtual Camera"
         files=list_files_process,
-        masking_engine=roop_globals.mask_engine,
-        new_clip_text=roop_globals.clip_text,
+        masking_engine=globals.mask_engine,
+        new_clip_text=globals.clip_text,
         use_new_method=True,
         imagemask=None,
         restore_original_mouth=False,
