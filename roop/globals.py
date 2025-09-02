@@ -48,7 +48,7 @@ class GLOBALS :
         self.no_face_action = 0
 
         # Enhancement settings
-        self.selected_enhancer = 'GPEN'  # 'GFPGAN', 'Codeformer', None, 'DMDNet', 'Restoreformer++', 'GPEN'
+        self.selected_enhancer = 'GFPGAN'  # 'GFPGAN', 'Codeformer', None, 'DMDNet', 'Restoreformer++', 'GPEN'
         self.subsample_size = 128
         self.autorotate_faces = True
 
@@ -68,7 +68,7 @@ class GLOBALS :
         
         # Miscellaneous processing options
         self.mask_engine : str = 'None'
-        self.clip_text : str = None
+        self.clip_text : str = 'None'
         self.keep_frames = False
         self.vr_mode = False
         self.skip_audio = False
@@ -84,9 +84,10 @@ class GLOBALS :
         self.g_desired_face_analysis = None
 
         if 'ROCMExecutionProvider' in execution_providers:
-            del torch
+            if 'torch' in globals():
+                del globals()['torch']
 
-    def encode_execution_providers(execution_providers: List[str]) -> List[str]:
+    def encode_execution_providers(self, execution_providers: List[str]) -> List[str]:
         return [execution_provider.replace('ExecutionProvider', '').lower() for execution_provider in execution_providers]
 
     def decode_execution_providers(self, execution_providers: List[str]) -> List[str]:
@@ -104,7 +105,7 @@ class GLOBALS :
 
         return list_providers
 
-    def suggest_max_memory() -> int:
+    def suggest_max_memory(self) -> int:
         if platform.system().lower() == 'darwin':
             return 4
         return 16
@@ -200,7 +201,7 @@ class GLOBALS :
         if self.process_mgr is None:
             self.process_mgr = ProcessMgr(None)
 
-        self.process_mgr.initialize(self.INPUT_FACESETS, self.TARGET_FACES, options)
+        self.process_mgr.initialize(self, self.INPUT_FACESETS, self.TARGET_FACES, options)
         newframe = self.process_mgr.process_frame(frame)
         if newframe is None:
             return frame
@@ -224,7 +225,7 @@ class GLOBALS :
 
     def batch_process_with_options(self, files:list[ProcessEntry], options, progress):
         release_resources()
-        limit_resources()
+        limit_resources(self)
         if self.process_mgr is None:
             self.process_mgr = ProcessMgr(progress)
         self.process_mgr.initialize(self, self.INPUT_FACESETS, self.TARGET_FACES, options)
@@ -251,12 +252,12 @@ class GLOBALS :
                 destination = util.get_destfilename_from_path(fullname, self.output_path, f'.{self.output_image_format}')
                 destination = util.replace_template(destination,globals=self, index=index)
                 pathlib.Path(os.path.dirname(destination)).mkdir(parents=True, exist_ok=True)
-                f.finalname = destination
+                f.finalname = destination # type: ignore
                 imagefiles.append(f)
 
             elif util.is_video(fullname) or util.has_extension(fullname, ['gif']):
                 destination = util.get_destfilename_from_path(fullname, self.output_path, f'__temp.{self.output_video_format}')
-                f.finalname = destination
+                f.finalname = destination # type: ignore
                 videofiles.append(f)
 
 
@@ -269,7 +270,7 @@ class GLOBALS :
                 origimages.append(f.filename)
                 fakeimages.append(f.finalname)
 
-            self.process_mgr.run_batch(origimages, fakeimages, self.execution_threads)
+            self.process_mgr.run_batch(origimages, fakeimages, self.execution_threads) # type: ignore
             origimages.clear()
             fakeimages.clear()
 
@@ -284,7 +285,7 @@ class GLOBALS :
 
                 is_streaming_only = output_method == "Virtual Camera"
                 if is_streaming_only == False:
-                    self.update_status(f'Creating {os.path.basename(v.finalname)} with {fps} FPS...')
+                    self.update_status(f'Creating {os.path.basename(v.finalname)} with {fps} FPS...') # type: ignore
 
                 start_processing = time()
                 if is_streaming_only == False and self.keep_frames or not use_new_method:
@@ -296,7 +297,7 @@ class GLOBALS :
                         return
 
                     temp_frame_paths = util.get_temp_frame_paths(self, v.filename)
-                    self.process_mgr.run_batch(temp_frame_paths, temp_frame_paths, self.execution_threads)
+                    self.process_mgr.run_batch(temp_frame_paths, temp_frame_paths, self.execution_threads) # type: ignore
                     if not self.processing:
                         self.end_processing('Processing stopped!')
                         return
@@ -307,7 +308,7 @@ class GLOBALS :
                         print("Resorting frames to create video")
                         util.sort_rename_frames(self, extract_path)                                    
                     
-                    ffmpeg.create_video(self, v.filename, v.finalname, fps)
+                    ffmpeg.create_video(self, v.filename, v.finalname, fps) # type: ignore
                     if not self.keep_frames:
                         util.delete_temp_frames(temp_frame_paths[0])
                 else:
@@ -315,38 +316,38 @@ class GLOBALS :
                         skip_audio = True
                     else:
                         skip_audio = self.skip_audio
-                    self.process_mgr.run_batch_inmem(output_method, v.filename, v.finalname, v.startframe, v.endframe, fps,self.execution_threads)
+                    self.process_mgr.run_batch_inmem(output_method, v.filename, v.finalname, v.startframe, v.endframe, fps,self.execution_threads) # type: ignore
                     
                 if not self.processing:
                     self.end_processing('Processing stopped!')
                     return
                 
                 video_file_name = v.finalname
-                if os.path.isfile(video_file_name):
+                if os.path.isfile(video_file_name): # type: ignore
                     destination = ''
                     if util.has_extension(v.filename, ['gif']):
                         gifname = util.get_destfilename_from_path(v.filename, self.output_path, '.gif')
-                        destination = util.replace_template(gifname, index=index)
+                        destination = util.replace_template(gifname, index=index) # type: ignore
                         pathlib.Path(os.path.dirname(destination)).mkdir(parents=True, exist_ok=True)
 
                         self.update_status('Creating final GIF')
-                        ffmpeg.create_gif_from_video(video_file_name, destination)
+                        ffmpeg.create_gif_from_video(video_file_name, destination) # type: ignore
                         if os.path.isfile(destination):
-                            os.remove(video_file_name)
+                            os.remove(video_file_name) # type: ignore
                     else:
                         skip_audio = self.skip_audio
-                        destination = util.replace_template(video_file_name, self, index=index)
+                        destination = util.replace_template(video_file_name, self, index=index) # type: ignore
                         pathlib.Path(os.path.dirname(destination)).mkdir(parents=True, exist_ok=True)
 
                         if not skip_audio:
-                            ffmpeg.restore_audio(self, video_file_name, v.filename, v.startframe, v.endframe, destination)
+                            ffmpeg.restore_audio(self, video_file_name, v.filename, v.startframe, v.endframe, destination) # type: ignore
                             if os.path.isfile(destination):
-                                os.remove(video_file_name)
+                                os.remove(video_file_name) # type: ignore
                         else:
-                            shutil.move(video_file_name, destination)
+                            shutil.move(video_file_name, destination) # type: ignore
 
                 elif is_streaming_only == False:
-                    self.update_status(f'Failed processing {os.path.basename(v.finalname)}!')
+                    self.update_status(f'Failed processing {os.path.basename(v.finalname)}!') # type: ignore
                 elapsed_time = time() - start_processing
                 average_fps = (v.endframe - v.startframe) / elapsed_time
                 self.update_status(f'\nProcessing {os.path.basename(destination)} took {elapsed_time:.2f} secs, {average_fps:.2f} frames/s')
@@ -359,7 +360,7 @@ class GLOBALS :
 
     def destroy(self) -> None:
         if self.target_path:
-            util.clean_temp(self.target_path)
+            util.clean_temp(self.target_path) # type: ignore
         release_resources()        
         sys.exit()
 

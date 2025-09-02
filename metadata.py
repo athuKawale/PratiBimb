@@ -2,6 +2,7 @@ title = 'PratiBimb'
 
 version = '7.8.0'
 
+workers = 1
 description = "Fast API app to perform image faceswap single and multiple faces and videofaceswap for single and multiple faces."
 
 os_info = "Ubuntu 24.04"

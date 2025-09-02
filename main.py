@@ -6,9 +6,9 @@ from fastapi import FastAPI
 from routers import faceswap, videoswap
 from contextlib import asynccontextmanager
 from fastapi.staticfiles import StaticFiles
-from metadata import version, title, description
 from roop.utilities import delete_temp_directory
 from concurrent.futures import ProcessPoolExecutor
+from metadata import version, title, description, workers
 
 # single thread doubles cuda performance - needs to be set before torch import
 if any(arg.startswith('--execution-provider') for arg in sys.argv):
@@ -46,8 +46,8 @@ app.include_router(videoswap.router)
 
 if __name__ == "__main__":
     try:
-
-        uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True)
+        # Keep reload=True only in Devlopement as workers flag is ignored in that case. In Production remove reload=True.
+        uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True, workers=workers)
 
     except Exception as e:
 

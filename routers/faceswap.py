@@ -5,10 +5,10 @@ import asyncio
 import requests
 import traceback
 from PIL import Image
-from metadata import version
 from datetime import datetime
 from roop.globals import GLOBALS
 from schema import SwapFaceRequest
+from metadata import version, workers
 from fastapi.responses import JSONResponse
 from typing import List, Dict, Any, Optional
 from roop.globals import BASE_URL, DATA_FILE
@@ -45,7 +45,7 @@ async def health() :
         "service": "image-face-swap",
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "version": version,
-        "active_workers": 1,
+        "active_workers": workers,
         "cleanup_worker_active": True
     }
 
@@ -68,7 +68,7 @@ async def get_available_templates():
                 "filename": template.get("filename"),
                 "signed_template_url": template.get("signed_template_url"),
                 "file_size": template.get("file_size"),
-                "last_modified": "2025-07-31T05:16:19.874000+00:00"
+                "last_modiwfied": "2025-07-31T05:16:19.874000+00:00"
 
             })
     except Exception as e:
@@ -87,7 +87,14 @@ async def get_template_info(template_id: str):
             
         for template in TEMPLATES_DATA.get("available_templates", []):
             if template.get("template_id") == template_id:
-                return template
+                # Create a new dictionary excluding the 'filename' key
+                template_without_filename = {
+                    key: value
+                    for key, value in template.items()
+                    if key != "filename"
+                }
+                return template_without_filename
+
     
         raise HTTPException(status_code=404, detail=f"Template with ID '{template_id}' not found.")
 
