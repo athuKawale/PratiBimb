@@ -14,13 +14,11 @@ from roop.ProcessMgr import ProcessMgr
 from roop.ProcessEntry import ProcessEntry
 from roop.ProcessOptions import ProcessOptions
 from roop.capturer import get_video_frame_total
-from roop.core import limit_resources, release_resources
-
 
 # Server settings
 BASE_URL = "http://localhost:8002"
 DATA_FILE = "data.json"
-execution_providers: List[str] = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+execution_providers: List[str] = ['CUDAExecutionProvider']
 
 class GLOBALS :
 
@@ -48,7 +46,7 @@ class GLOBALS :
         self.no_face_action = 0
 
         # Enhancement settings
-        self.selected_enhancer = 'GFPGAN'  # 'GFPGAN', 'Codeformer', None, 'DMDNet', 'Restoreformer++', 'GPEN'
+        self.selected_enhancer = 'GPEN'  # 'GFPGAN', 'Codeformer', None, 'DMDNet', 'Restoreformer++', 'GPEN'
         self.subsample_size = 128
         self.autorotate_faces = True
 
@@ -61,7 +59,7 @@ class GLOBALS :
         self.output_show_video = True
 
         # Performance & resource settings
-        self.max_memory = None
+        self.max_memory = 11
         self.memory_limit = 0
         self.execution_threads = 4
         self.cuda_device_id = 0
@@ -209,8 +207,8 @@ class GLOBALS :
 
     def batch_process_regular(self, swap_model, output_method, files:list[ProcessEntry], masking_engine:str, new_clip_text:str, use_new_method, imagemask, restore_original_mouth, num_swap_steps, progress, selected_index = 0) -> None:
 
-        release_resources()
-        limit_resources(self)
+        self.release_resources()
+        self.limit_resources()
         if self.process_mgr is None:
             self.process_mgr = ProcessMgr(progress)
         mask = imagemask["layers"][0] if imagemask is not None else None
@@ -224,15 +222,15 @@ class GLOBALS :
         return
 
     def batch_process_with_options(self, files:list[ProcessEntry], options, progress):
-        release_resources()
-        limit_resources(self)
+        self.release_resources()
+        self.limit_resources()
         if self.process_mgr is None:
             self.process_mgr = ProcessMgr(progress)
         self.process_mgr.initialize(self, self.INPUT_FACESETS, self.TARGET_FACES, options)
         self.batch_process("Files", files, True)
 
     def batch_process(self, output_method, files:list[ProcessEntry], use_new_method) -> None:
-
+        
         self.processing = True
 
         # limit threads for some providers
@@ -356,12 +354,12 @@ class GLOBALS :
 
     def end_processing(self, msg:str):
         self.update_status(msg)
-        release_resources()
+        self.release_resources()
 
     def destroy(self) -> None:
         if self.target_path:
             util.clean_temp(self.target_path) # type: ignore
-        release_resources()        
+        self.release_resources()        
         sys.exit()
 
 

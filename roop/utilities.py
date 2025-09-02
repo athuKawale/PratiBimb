@@ -42,6 +42,8 @@ def delete_temp_directory():
     # Clean static/Face-swap/results and static/Face-swap/Templates
     results_dir = "static/Face-swap/results"
     template_dir = "static/Face-swap/Templates"
+    temp_frames = "static/Video-swap/Templates/temp"
+
     if os.path.exists(results_dir) and os.path.isdir(results_dir):
         for filename in os.listdir(results_dir):
             file_path = os.path.join(results_dir, filename)
@@ -65,6 +67,18 @@ def delete_temp_directory():
             except Exception as e:
                 print(f"Failed to delete {file_path}. Reason: {e}")
         print(f"Deleted all files in static results directory: {template_dir}")
+
+    if os.path.exists(temp_frames) and os.path.isdir(temp_frames):
+        for filename in os.listdir(temp_frames):
+            file_path = os.path.join(temp_frames, filename)
+            try:
+                if os.path.isfile(file_path) or os.path.islink(file_path):
+                    os.remove(file_path)
+                elif os.path.isdir(file_path):
+                    shutil.rmtree(file_path)
+            except Exception as e:
+                print(f"Failed to delete {file_path}. Reason: {e}")
+        print(f"Deleted all files in static results directory: {temp_frames}")
 
     # Clean static/Video-swap/ except static/Video-swap/Templates
     video_swap_dir = "static/Video-swap"
