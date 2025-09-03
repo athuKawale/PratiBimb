@@ -1,6 +1,6 @@
 # Pre-requisite
 1. Ubuntu 24.04
-2. CUDA 12.4 compatible gpu.
+2. CUDA 12.4 compatible gpu. (Requires ~11 GB max for video swap.)
 
 # Setup
 ```bash
