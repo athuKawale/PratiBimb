@@ -47,7 +47,7 @@ app.include_router(videoswap.router)
 if __name__ == "__main__":
     try:
         # Keep reload=True only in Devlopement as workers flag is ignored in that case. In Production remove reload=True.
-        uvicorn.run("main:app", host="0.0.0.0", port=8002, reload=True, workers=workers)
+        uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, workers=workers)
 
     except Exception as e:
 
