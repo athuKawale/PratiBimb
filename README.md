@@ -38,6 +38,10 @@ conda create -n pratibimb python=3.11 -y
 
 conda activate pratibimb
 
+conda install -c conda-forge cudatoolkit cudnn nccl
+
+ln -sf $HOME/anaconda3/envs/pratibimb/lib/python3.11/site-packages/nvidia/nvjitlink/lib/libnvJitLink.so.12 $HOME/anaconda3/envs/pratibimb/lib/python3.11/site-packages/nvidia/cusparse/lib/libnvJitLink.so.12
+
 bash environment/build_linux.sh
 ```
 

@@ -5,7 +5,7 @@ git clone https://huggingface.co/AthuKawaleLogituit/Faceswap
 rm -rf Faceswap/.git
 mv Faceswap/* ./models/
 rm -rf Faceswap
-pip install -r requirements.txt
+conda run -n pratibimb --live-stream pip install -r requirements.txt
 conda run -n pratibimb --live-stream conda install -c conda-forge libstdcxx-ng -y
 echo 'export PYTHONPATH="$(pwd)"' >> ~/.bashrc
 echo 'export NO_ALBUMENTATIONS_UPDATE="1"' >> ~/.bashrc
